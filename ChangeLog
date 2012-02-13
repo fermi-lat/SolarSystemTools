@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: gudlaugu  Mon Feb 13 14:24:37 PST 2012
+SolarSystemTools/src
+
+Modified Files:
+	BinnedExposureSun.cxx ExposureCubeSun.cxx 
+Log Message:
+Adding cache to Aeff calculations in BinnedExposureSun
+    *
+------------------------------------------------------------
+User: gudlaugu  Mon Feb 13 14:24:37 PST 2012
 SolarSystemTools/SolarSystemTools
 
 Modified Files:
