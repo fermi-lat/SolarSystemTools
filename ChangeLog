@@ -1,0 +1,9 @@
+------------------------------------------------------------
+User: gudlaugu  Mon Feb 13 14:24:36 PST 2012
+SolarSystemTools
+
+Modified Files:
+	SConscript 
+Log Message:
+Adding cache to Aeff calculations in BinnedExposureSun
+    *
