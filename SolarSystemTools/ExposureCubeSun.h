@@ -3,7 +3,7 @@
  * @brief Exposure time hypercube.
  * @author G. Johannesson <gudlaugu@glast2.stanford.edu>
  *
- * $Header: $
+ * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_ExposureCubeSun_h
@@ -33,7 +33,7 @@ namespace SolarSystemTools {
  *
  * @author G. Johannesson
  *
- * $Header: $
+ * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
  */
 
 class ExposureCubeSun {
@@ -125,7 +125,7 @@ public:
 
    class Aeff {
    public:
-      Aeff(double energy, int evtType, const Observation & observation); 
+      Aeff(double energy, const Observation & observation); 
       virtual ~Aeff() {}
       virtual double operator()(double cosTheta, double phi=0) const;
       virtual double integral(double cosTheta, double phi=0) const {
@@ -133,7 +133,6 @@ public:
       }
    protected:
       double m_energy;
-      int m_evtType;
       const Observation & m_observation;
    };
 

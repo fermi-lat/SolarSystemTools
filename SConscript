@@ -2,7 +2,7 @@
 #
 # Authors: Gudlaugur Johannesson <gudlaugu@glast2.stanford.edu>
 # Version: SolarSystemTools-00-00-00
-# $Header: $
+# $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SConscript,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
 Import('baseEnv')
 Import('listFiles')
 progEnv = baseEnv.Clone()
