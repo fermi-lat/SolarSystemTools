@@ -4,7 +4,7 @@
  * various energies.
  * @author J. Chiang
  *
- * $Header: $
+ * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/src/BinnedExposureSun.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -32,7 +32,7 @@
 #include "SolarSystemTools/Observation.h"
 
 namespace {
-   double fracDiff(double target, double result) {
+   inline double fracDiff(double target, double result) {
       return std::fabs((target - result)/target);
    }
    std::vector<double>::const_iterator 
@@ -236,6 +236,11 @@ void BinnedExposureSun::computeMap() {
      costhetasun[j] = (m_costhetasun[j]+m_costhetasun[j+1])/2.;
    }
 
+	 //Create a cache for AEff calculations
+	 std::vector<Aeff*> aeffs;
+	 for (size_t i = 0; i < m_energies.size(); ++i)
+     aeffs.push_back(new Aeff(m_energies[i], *m_observation, m_costhmin, m_costhmax));
+
    for (int j = 0; j < m_naxes.at(1); j++) {
       for (int i = 0; i < m_naxes.at(0); i++, iter++) {
          if ((iter % ((m_naxes.at(1)*m_naxes.at(0))/20)) == 0) {
@@ -256,22 +261,18 @@ void BinnedExposureSun::computeMap() {
          }
                                            
          for (unsigned int k = 0; k < m_energies.size(); k++) {
-            std::map<unsigned int, irfInterface::Irfs *>::const_iterator 
-               resp = m_observation->respFuncs().begin();
-            for (; resp != m_observation->respFuncs().end(); ++resp) {
-               int evtType = resp->second->irfID();
-               Aeff aeff(m_energies[k], evtType, *m_observation, m_costhmin,
-                         m_costhmax);
+               const Aeff &aeff = *aeffs[k]; 
                for (int l = 0; l < m_naxes.at(3); ++l) {
 								   const unsigned int indx = ((l*m_energies.size() + k)*m_naxes.at(1) + j)*m_naxes.at(0) + i;
                    m_exposureMap.at(indx)
                      +=m_observation->expCubeSun().value(dir, costhetasun[l], aeff, m_energies.at(k));
                }
-            }
          }
       }
    }
    formatter.warn() << "!" << std::endl;
+	 for (size_t i = 0; i < m_energies.size(); ++i)
+     delete aeffs[i];
 }
 
 void BinnedExposureSun::writeOutput(const std::string & filename) const {
@@ -377,7 +378,15 @@ double BinnedExposureSun::Aeff::operator()(double cosTheta, double phi) const {
    if (cosTheta < m_costhmin || cosTheta > m_costhmax) {
       return 0;
    }
-   return ExposureCubeSun::Aeff::operator()(cosTheta, phi);
+	 //Check the cache for the value, add it if it does not exist
+	 const std::pair<double,double> indx(std::make_pair(cosTheta,phi));
+	 std::map<std::pair<double,double>,double>::iterator it = m_cache.find(indx);
+	 if (it == m_cache.end()) {
+		 it = m_cache.insert(std::make_pair(indx,ExposureCubeSun::Aeff::operator()(cosTheta, phi))).first;
+	 }
+	 //if ( (*it).second != ExposureCubeSun::Aeff::operator()(cosTheta,phi))
+	//	 std::cout<<"Cache is not working properly: "<<cosTheta<<", "<<phi<<std::endl;
+   return (*it).second;
 }
 
 } // namespace SolarSystemTools
