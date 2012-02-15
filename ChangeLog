@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: gudlaugu  Tue Feb 14 19:03:50 PST 2012
+SolarSystemTools/SolarSystemTools
+
+Modified Files:
+	BinnedExposureSun.h ExposureCubeSun.h 
+Added Files:
+	FitsSolarProfile.h HealpixExposureSun.h SolarProfile.h 
+	SolarTemplate.h 
+Log Message:
+Added Healpix binned solar exposure maps and a tool to create a template map from these maps and a binned exposure cube
+    *
+------------------------------------------------------------
 User: gudlaugu  Tue Feb 14 19:03:49 PST 2012
 SolarSystemTools
 
