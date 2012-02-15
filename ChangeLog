@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Tue Feb 14 19:03:53 PST 2012
+SolarSystemTools/src/gtsuntemp
+
+Added Files:
+	gtsuntemp.cxx 
+Log Message:
+Added Healpix binned solar exposure maps and a tool to create a template map from these maps and a binned exposure cube
+    *
+------------------------------------------------------------
 User: gudlaugu  Tue Feb 14 19:03:52 PST 2012
 SolarSystemTools/src
 
