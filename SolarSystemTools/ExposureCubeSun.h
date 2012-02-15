@@ -3,7 +3,7 @@
  * @brief Exposure time hypercube.
  * @author G. Johannesson <gudlaugu@glast2.stanford.edu>
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.2 2012/02/13 22:24:36 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_ExposureCubeSun_h
@@ -33,7 +33,7 @@ namespace SolarSystemTools {
  *
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.2 2012/02/13 22:24:36 gudlaugu Exp $
  */
 
 class ExposureCubeSun {
@@ -115,6 +115,10 @@ public:
    bool hasPhiDependence() const {
       return m_hasPhiDependence;
    }
+
+	 healpix::Healpix getHealpix() const {
+		 return m_exposure->data().healpix();
+	 }
 
 	 //Returns the boundaries
 	 void costhetaBinsSun(std::vector<double> &muSunbounds) const;

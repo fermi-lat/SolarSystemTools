@@ -4,7 +4,7 @@
  * integrations
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/BinnedExposureSun.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/BinnedExposureSun.h,v 1.2 2012/02/13 22:24:36 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_BinnedExposureSun_h
@@ -80,6 +80,20 @@ public:
       m_enforce_boundaries = enforce_boundaries;
    }
 
+   class Aeff : public ExposureCubeSun::Aeff {
+   public:
+      Aeff(double energy, const Observation & observation,
+           double costhmin, double costhmax) 
+         : ExposureCubeSun::Aeff(energy, observation),
+           m_costhmin(costhmin), m_costhmax(costhmax) {}
+      virtual double operator()(double cosTheta, double phi=0) const;
+   private:
+      double m_costhmin;
+      double m_costhmax;
+			mutable std::map< std::pair<double,double>, double> m_cache;
+   };
+   
+
 protected:
 
 // Disable copy constructor and copy assignment operator
@@ -131,19 +145,6 @@ private:
 
    void computeMap();
 
-   class Aeff : public ExposureCubeSun::Aeff {
-   public:
-      Aeff(double energy, const Observation & observation,
-           double costhmin, double costhmax) 
-         : ExposureCubeSun::Aeff(energy, observation),
-           m_costhmin(costhmin), m_costhmax(costhmax) {}
-      virtual double operator()(double cosTheta, double phi=0) const;
-   private:
-      double m_costhmin;
-      double m_costhmax;
-			mutable std::map< std::pair<double,double>, double> m_cache;
-   };
-   
 };
 
 } // namespace SolarSystemTools

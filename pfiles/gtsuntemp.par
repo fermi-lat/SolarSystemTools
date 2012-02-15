@@ -1,0 +1,32 @@
+# $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/pfiles/gtexpcubesun.par,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+#
+# General parameters.
+expsun,f,a,"",,,"Exposure binned in healpix and solar angles"
+avgexp,f,a,"",,,"Binned exposure"
+sunprof,f,a,"",,,"Fits file containing solar intensity profile"
+cmap,f,a,"",,,"Counts map file"
+outfile,f,a,"",,,"Output file name"
+
+# Parameters for user-defined map.
+nxpix,i,a,360,,,"Size of the X axis in pixels"
+nypix,i,a,180,,,"Size of the Y axis in pixels"
+binsz,r,a,1,,,"Image scale (in degrees/pixel)"
+coordsys,s,a,GAL,CEL|GAL,,"Coordinate system (CEL - celestial, GAL -galactic)"
+xref,r,a,0,,,"First coordinate of image center in degrees (RA or galactic l)"
+yref,r,a,0,,,"Second coordinate of image center in degrees (DEC or galactic b)"
+axisrot,r,a,0.,,,"Rotation angle of image axis, in degrees"
+proj,s,a,"CAR",,,"Projection method e.g. AIT|ARC|CAR|GLS|MER|NCP|SIN|STG|TAN"
+ebinalg,s,h,LOG,LOG|FILE,,"Algorithm for defining energy bins"
+emin,r,a,100,,,"Start energy (MeV) of first bin"
+emax,r,a,3e5,,,"Stop energy (MeV) of last bin"
+enumbins,i,a,10,,,"Number of logarithmically-spaced energy bins"
+ebinfile,s,a,NONE,,,"Name of FITS file containing the energy bin definition"
+
+# Hidden parameters.
+bincalc,s,h,"EDGE",EDGE|CENTER,,"Energy values as bounds or logrithmic centers of energy bins"
+irfs,s,h,"P7SOURCE_V6",,,"Response functions to use"
+
+chatter,i,h,2,0,4,Output verbosity
+clobber,        b, h, yes, , , "Overwrite existing output files"
+debug,          b, h, no, , , "Activate debugging mode"
+mode,           s, h, "ql", , , "Mode of automatic parameters"

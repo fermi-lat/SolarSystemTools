@@ -1,10 +1,10 @@
 /**
  * @file BinnedExposureSun.cxx
  * @brief Integral of effective area over time for the entire sky at
- * various energies.
- * @author J. Chiang
+ * various energies and binned in angles from the sun.
+ * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/src/BinnedExposureSun.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/BinnedExposureSun.cxx,v 1.2 2012/02/13 22:24:37 gudlaugu Exp $
  */
 
 #include <cmath>
