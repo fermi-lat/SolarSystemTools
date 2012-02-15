@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Tue Feb 14 19:03:49 PST 2012
+SolarSystemTools
+
+Modified Files:
+	SConscript 
+Log Message:
+Added Healpix binned solar exposure maps and a tool to create a template map from these maps and a binned exposure cube
+    *
+------------------------------------------------------------
 User: gudlaugu  Tue Feb 14 18:54:59 PST 2012
 SolarSystemTools/src/gtsuntemp
 
