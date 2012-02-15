@@ -1,9 +1,10 @@
 /** @file release.notes
     @brief package dataSubselector
-    $Header: $
+    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
 
     @verbatim
     * EOH *
 
+ SolarSystemTools-00-01-00 14-Feb-2012 gudlaugu Added a tool to create an healpix binned solar exposure map and another tool to create a template for the sun from those maps
     @endverbatim
 */
