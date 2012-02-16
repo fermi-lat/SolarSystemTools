@@ -3,13 +3,13 @@
 
 @author G. Johannesson
 
-$Header: $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/CosineBinner2D.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
 */
 
 #ifndef SolarSystemTools_CosineBinner2D_h
 #define SolarSystemTools_CosineBinner2D_h
 
-#include <map>
+#include <tr1/unordered_map>
 #include <vector>
 #include <string>
 #include <cmath>
@@ -24,9 +24,12 @@ namespace SolarSystemTools {
 
     */
 
-class CosineBinner2D : public std::map<size_t,double> {
+class CosineBinner2D : std::tr1::unordered_map<size_t,double> {
 public:
     CosineBinner2D();
+    
+		typedef std::tr1::unordered_map<size_t,double>::const_iterator const_iterator;
+		typedef std::tr1::unordered_map<size_t,double>::iterator iterator;
     
     /// the binning function: add value to the selected bin, if costheta1 and costheta2 in range
     void fill(double costheta1, double costheta2, double value);
@@ -44,26 +47,39 @@ public:
     //! @param costheta1 cos(theta1)
     //! @param costheta2 cos(theta2)
     double& operator()(double costheta1, double costheta2, double phi=-3*M_PI);
-    const double& operator()(double costheta1, double costheta2, double phi=-3*M_PI)const;
+    double operator()(double costheta1, double costheta2, double phi=-3*M_PI)const;
+
+		double& operator[](size_t i);
+		double operator[](size_t i) const;
+
+		size_t size() const {return std::tr1::unordered_map<size_t,double>::size();}
+		iterator begin() {return std::tr1::unordered_map<size_t,double>::begin();}
+		const_iterator begin() const {return std::tr1::unordered_map<size_t,double>::begin();}
+		iterator end() {return std::tr1::unordered_map<size_t,double>::end();}
+		const_iterator end() const {return std::tr1::unordered_map<size_t,double>::end();}
 
     /// cos(theta1) for the iterator
-    double costheta1(std::map<size_t,double>::const_iterator i)const;
+    double costheta1(const const_iterator &i)const;
 
     /// cos(theta2) for the iterator
-    double costheta2(std::map<size_t,double>::const_iterator i) const;
+    double costheta2(const const_iterator &i) const;
 
     /// phi for the iterator, returns negative numbers for iterators not in the phi range.
-    double phi(std::map<size_t,double>::const_iterator i) const;
+    double phi(const const_iterator &i) const;
 
-    const_iterator end_costh()const{return lower_bound(s_nbins1*s_nbins2);}
+	//	const_iterator end_costh()const{return lower_bound(s_nbins1*s_nbins2);}
 
     /// integral over the range with functor accepting costheta1 and costheta2 as an arg. 
     template<class F>
     double operator()(const F& f)const
     {   
+			  sort_index();
         double sum=0;
-        for(const_iterator it=begin(); it!=end_costh(); ++it){
-            sum += (*it).second*f(costheta1(it), costheta2(it));
+				std::vector<size_t>::const_iterator it = m_sortedIndex.begin();
+				std::vector<size_t>::const_iterator end = std::lower_bound(m_sortedIndex.begin(), m_sortedIndex.end(), s_nbins1*s_nbins2);
+        for( ; it!=end; ++it){
+					  const const_iterator mit = find(*it);
+            sum += (*mit).second*f(costheta1(mit), costheta2(mit));
         }
         return sum; 
 
@@ -72,10 +88,14 @@ public:
     template<class F>
     double operator()(const F& f, double costheta2)const
     {   
+			  sort_index();
         double sum=0;
 				const size_t i2 = cosine_index2(costheta2);
-        for(const_iterator it=lower_bound(i2*s_nbins1); it!=upper_bound((i2+1)*s_nbins1-1); ++it){
-            sum += (*it).second*f(costheta1(it));
+				std::vector<size_t>::const_iterator it = std::lower_bound(m_sortedIndex.begin(), m_sortedIndex.end(), i2*s_nbins1);
+				std::vector<size_t>::const_iterator end = std::lower_bound(m_sortedIndex.begin(), m_sortedIndex.end(), (i2+1)*s_nbins1);
+        for( ; it != end; ++it){
+					  const const_iterator mit = find(*it);
+            sum += (*mit).second*f(costheta1(mit));
         }
         return sum; 
 
@@ -85,14 +105,17 @@ public:
     template<class G>
     double integral(const G& f, double costheta2)const
     {   
+			  sort_index();
         double sum=0;
 				const size_t i2 = cosine_index2(costheta2);
 				const size_t nbins = s_nbins1*s_nbins2;
 				for(size_t iphi(0); iphi < nphibins(); ++iphi) {
 					  const size_t phistart(iphi*nbins);
-						const const_iterator end = upper_bound(s_nbins1*s_nbins2+(i2+1)*s_nbins1+phistart-1);
-            for(const_iterator it=lower_bound(s_nbins1*s_nbins2+i2*s_nbins1+phistart); it!=end; ++it){
-                sum += (*it).second*f.integral(costheta1(it), phi(it));
+						std::vector<size_t>::const_iterator it = std::lower_bound(m_sortedIndex.begin(), m_sortedIndex.end(), s_nbins1*s_nbins2+i2*s_nbins1+phistart);
+						std::vector<size_t>::const_iterator end = std::lower_bound(m_sortedIndex.begin(), m_sortedIndex.end(), s_nbins1*s_nbins2+(i2+1)*s_nbins1+phistart);
+            for( ; it != end; ++it){
+							  const const_iterator mit = find(*it);
+                sum += (*mit).second*f.integral(costheta1(mit), phi(mit));
 						}
         }
         return sum; 
@@ -102,9 +125,13 @@ public:
     template<class G>
     double integral(const G& f)const
     {   
+			  sort_index();
         double sum=0;
-        for(const_iterator it=end_costh(); it!=end(); ++it){
-            sum += (*it)*f.integral(costheta1(it), costheta2(it), phi(it) );
+				std::vector<size_t>::const_iterator it = std::lower_bound(m_sortedIndex.begin(), m_sortedIndex.end(), s_nbins1*s_nbins2);
+				std::vector<size_t>::const_iterator end = m_sortedIndex.end();
+        for( ; it!=end; ++it){
+					  const const_iterator mit = find(*it);
+            sum += (*mit)*f.integral(costheta1(mit), costheta2(mit), phi(mit) );
         }
         return sum; 
 
@@ -135,6 +162,10 @@ public:
     static double folded_phi(double phi);
 private:
 
+		mutable std::vector<size_t> m_sortedIndex;
+		mutable bool m_sorted;
+
+		void sort_index() const;
 
     static double s_cosmin1, s_cosmin2; ///< minimum value of cos(theta)
     static size_t s_nbins1, s_nbins2;  ///< number of costheta bins
