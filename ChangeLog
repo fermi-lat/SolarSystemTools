@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: gudlaugu  Thu Feb 16 17:49:51 PST 2012
+SolarSystemTools/src
+
+Modified Files:
+	CosineBinner2D.cxx ExposureSun.cxx 
+Log Message:
+CosineBinner2D now uses vector as storage but filters out 0s for integration and storage
+    *
+------------------------------------------------------------
+User: gudlaugu  Thu Feb 16 17:49:51 PST 2012
 SolarSystemTools/SolarSystemTools
 
 Modified Files:
