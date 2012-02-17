@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Thu Feb 16 17:49:51 PST 2012
+SolarSystemTools/SolarSystemTools
+
+Modified Files:
+	CosineBinner2D.h 
+Log Message:
+CosineBinner2D now uses vector as storage but filters out 0s for integration and storage
+    *
+------------------------------------------------------------
 User: gudlaugu  Thu Feb 16 15:19:54 PST 2012
 SolarSystemTools/src/gtexphpsun
 
