@@ -3,7 +3,7 @@
 
 @author G. Johannesson
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.2 2012/02/16 23:19:53 gudlaugu Exp $
 */
 
 
@@ -66,10 +66,9 @@ size_t CosineBinner2D::index(double costheta1, double costheta2, double phi)
 }
 
 //----------------------- Instance functions ------------------------------
-CosineBinner2D::CosineBinner2D() :
-	m_sorted(false)
+CosineBinner2D::CosineBinner2D() 
 {
-    //resize(s_phibins==0? s_nbins1*s_nbins2: s_nbins1*s_nbins2*(1+s_phibins) );
+    resize(s_phibins==0? s_nbins1*s_nbins2: s_nbins1*s_nbins2*(1+s_phibins) );
 }
 
 /// the binning function: add value to the selected bin
@@ -88,30 +87,6 @@ size_t CosineBinner2D::fill(double costheta1, double costheta2, double phi, doub
     (*this)[pi] += value;
     return pi;
 }
-double& CosineBinner2D::operator[](size_t i) {
-	// Return if it is found, otherwise insert new
-	iterator it = find(i);
-	if ( it == end() ) {
-		if (m_sorted) {
-			m_sorted = false;
-			m_sortedIndex.resize(0);
-		}
-		return (*(insert(std::make_pair(i, double(0.0))).first)).second;
-	} else {
-		return (*it).second;
-	}
-}
-
-double CosineBinner2D::operator[](size_t i) const{
-	// Return if it is found, otherwise return 0
-	const_iterator it = find(i);
-	if ( it == end() ) {
-		return 0;
-	} else {
-		return (*it).second;
-	}
-}
-
 
 double& CosineBinner2D::operator()(double costheta1, double costheta2, double phi)
 {
@@ -119,7 +94,7 @@ double& CosineBinner2D::operator()(double costheta1, double costheta2, double ph
   return (*this)[i];
 }
 
-double CosineBinner2D::operator()(double costheta1, double costheta2, double phi)const
+const double& CosineBinner2D::operator()(double costheta1, double costheta2, double phi)const
 {
 	const size_t i=index(costheta1,costheta2,phi);
   return (*this)[i];
@@ -129,7 +104,8 @@ double CosineBinner2D::operator()(double costheta1, double costheta2, double phi
 /// cos(theta1) for the iterator
 double CosineBinner2D::costheta1(const CosineBinner2D::const_iterator &i)const
 {
-    const size_t bin = ( (*i).first % ( s_nbins1*s_nbins2 ) ) % s_nbins1 ;
+	  const size_t ind = i - begin();
+    const size_t bin = ( ind % ( s_nbins1*s_nbins2 ) ) % s_nbins1 ;
     double f = (bin+0.5)/s_nbins1;
     if( s_sqrt_weight) f=f*f;
     return 1. - f*(1-s_cosmin1); 
@@ -137,7 +113,8 @@ double CosineBinner2D::costheta1(const CosineBinner2D::const_iterator &i)const
 /// cos(theta2) for the iterator
 double CosineBinner2D::costheta2(const CosineBinner2D::const_iterator &i)const
 {
-    const size_t bin = ( (*i).first % ( s_nbins1*s_nbins2 ) ) / s_nbins1 ;
+	  const size_t ind = i - begin();
+    const size_t bin = ( ind % ( s_nbins1*s_nbins2 ) ) / s_nbins1 ;
     double f = (bin+0.5)/s_nbins2;
     if( s_sqrt_weight) f=f*f;
     return 1. - f*(1-s_cosmin2); 
@@ -145,7 +122,8 @@ double CosineBinner2D::costheta2(const CosineBinner2D::const_iterator &i)const
 /// phi for the iterator: note only 0-pi/4 (0-45 degrees)
 double CosineBinner2D::phi(const CosineBinner2D::const_iterator &i)const
 {
-    const size_t bin = (*i).first / ( s_nbins1*s_nbins2 ) - 1;
+	  const size_t ind = i - begin();
+    const size_t bin = ind / ( s_nbins1*s_nbins2 ) - 1;
     double f = (bin+0.5)/s_phibins;
     if( s_sqrt_weight) f=f*f;
     return M_PI/4. * f;
@@ -158,17 +136,6 @@ std::string CosineBinner2D::thetaBinning(){
     }else{
         return "COSTHETA";
     }
-}
-
-void CosineBinner2D::sort_index() const {
-	if (! m_sorted) {
-		m_sortedIndex.reserve(size());
-	  const_iterator it = begin();
-		for ( ; it != end(); ++it)
-			m_sortedIndex.push_back((*it).first);
-		std::sort(m_sortedIndex.begin(), m_sortedIndex.end());
-		m_sorted = true;
-	}
 }
 
 void CosineBinner2D::setBinning(double cosmin1, double cosmin2, size_t nbins1, size_t nbins2, bool sqrt_weight)
