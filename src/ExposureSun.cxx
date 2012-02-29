@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.2 2012/02/16 23:19:53 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.3 2012/02/17 01:49:51 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -75,23 +75,23 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
     data().setHealpix(Healpix(nside, ord, coordsys));
 
     tip::Table::ConstIterator itor = table.begin();
-		healpix::HealpixArray<CosineBinner2D>::iterator haitor = data().begin();
+    healpix::HealpixArray<CosineBinner2D>::iterator haitor = data().begin();
 
     for( ; itor != table.end(); ++haitor, ++itor)
     {
-			  std::vector<double> values;
-			  std::vector<size_t> index;
-        (*itor)["Values"].get(values);
-        (*itor)["Index"].get(index);
-				assert( values.size() == index.size() );
-				
-				for (size_t i = 0; i < index.size(); ++i) {
-					(*haitor)[index[i]] = values[i];
-				}
+       std::vector<double> values;
+       std::vector<size_t> index;
+       (*itor)["Values"].get(values);
+       (*itor)["Index"].get(index);
+       assert( values.size() == index.size() );
+
+       for (size_t i = 0; i < index.size(); ++i) {
+          (*haitor)[index[i]] = values[i];
+       }
 
     }
     delete &table; 
-		create_cache();
+    create_cache();
 }
 
 /// return the closest power of 2 for the side parameter
@@ -179,19 +179,19 @@ public:
         // check if we are making a horizon cut:
         bool ok( m_zcut==-1);
         if( ! ok) {
-            double z(x.second.dot(m_zenith));
+            const double z(x.second.dot(m_zenith));
             ok = z > m_zcut;
         }
         if( ok) {
             // if ok, add to the angle histogram
             const Simple3Vector& pixeldir(x.second);
             if( m_use_phi) {
-                CLHEP::Hep3Vector instrument_dir( pixeldir.transform(m_rot) );
-                 double costheta(instrument_dir.z()), phi(instrument_dir.phi());
+                const CLHEP::Hep3Vector instrument_dir( pixeldir.transform(m_rot) );
+                const double costheta(instrument_dir.z()), phi(instrument_dir.phi());
                 x.first->fill( costheta, pixeldir.dot(m_dirsun), phi , m_deltat);
-						} else {
-							  x.first->fill( pixeldir.dot(m_dirz), pixeldir.dot(m_dirsun), m_deltat);
-						}
+            } else {
+               x.first->fill( pixeldir.dot(m_dirz), pixeldir.dot(m_dirsun), m_deltat);
+            }
 
             m_total += m_deltat;
         }else{
@@ -258,22 +258,22 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
 
     // get iterators for the Table and the HealpixArray
     tip::Table::Iterator itor = table.begin();
-		healpix::HealpixArray<CosineBinner2D>::const_iterator haitor = data().begin();
+    healpix::HealpixArray<CosineBinner2D>::const_iterator haitor = data().begin();
 
     // now just copy
     for( ; haitor != data().end(); ++haitor, ++itor)
     {
-			  std::vector<double> values;
-				std::vector<size_t> index;
-        CosineBinner2D::const_iterator it = (*haitor).begin();
-				for (size_t i=0; it != (*haitor).end(); ++it, ++i){
-					if ( (*it) != 0 ) {
-						index.push_back(i);
-						values.push_back(*it);
-					}
-				}
-        (*itor)["Values"].set(values);
-        (*itor)["Index"].set(index);
+       std::vector<double> values;
+       std::vector<size_t> index;
+       CosineBinner2D::const_iterator it = (*haitor).begin();
+       for ( ; it != (*haitor).end(); ++it){
+          if ( (*it) != 0 ) {
+             index.push_back((*haitor).index(it));
+             values.push_back(*it);
+          }
+       }
+       (*itor)["Values"].set(values);
+       (*itor)["Index"].set(index);
     }
 
     // set the headers (TODO: do the comments, too)
@@ -367,9 +367,9 @@ bool ExposureSun::processEntry(const tip::ConstTableRecord & row, const GTIvecto
 	row["ra_zenith"].get(razenith);
 	row["dec_zenith"].get(deczenith);
         SkyDir zenith(razenith, deczenith);
-				//Usa astro to calculate the direction to the sun at center of bin
-				const double mjd = (start+stop)/2./86400. + s_mjd_missionStart;
-				SkyDir scsun(m_solar_dir.direction(mjd));
+        //Usa astro to calculate the direction to the sun at center of bin
+        const double mjd = (start+stop)/2./86400. + s_mjd_missionStart;
+        SkyDir scsun(m_solar_dir.direction(mjd));
         if( m_weighted ){
             // adjust time by multiplying by livetime fraction
             deltat *= livetime/(stop-start);

@@ -3,7 +3,7 @@
 
     @author G. Johannesson
 
-		$Header: $
+		$Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
 */
 #ifndef SolarSystemTools_EXPOSURE_SUN_H
 #define SolarSystemTools_EXPOSURE_SUN_H
@@ -30,7 +30,7 @@ namespace SolarSystemTools {
 
 It is a pixelated using Healpix binning, and the CosineBinner2D class
 
-$Header: $
+$Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
 */
 
 class ExposureSun : public SkyExposure2D {
@@ -46,8 +46,8 @@ public:
         bool   weighted=false
         );
 
-		//! add a time interval at the given position, should never be used
-		virtual void fill(const astro::SkyDir& dirz, double deltat);
+    //! add a time interval at the given position, should never be used
+    virtual void fill(const astro::SkyDir& dirz, double deltat);
 
     //! add a time interval at the given position
     virtual void fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, double deltat);
@@ -59,20 +59,20 @@ public:
     ExposureSun(const std::string& inputfile, const std::string& tablename="ExposureSun");
     void load(const std::string& inputfile, const std::string& tablename="ExposureSun");
 
-		//! Integral for costhetasun positions
-		template<class F>
-			double operator()(const astro::SkyDir&dir, double costhetasun, const F& fun) const
-			{
-				const SolarSystemTools::CosineBinner2D& binner = data()[dir];
-				return binner(fun,costhetasun);
-			}
+    //! Integral for costhetasun positions
+    template<class F>
+       double operator()(const astro::SkyDir&dir, double costhetasun, const F& fun) const
+       {
+          const SolarSystemTools::CosineBinner2D binner = data()[dir];
+          return binner(fun,costhetasun);
+       }
 
-		template<class F>
-			double integral(const astro::SkyDir&dir, double costhetasun, const F& fun) const
-			{
-				const SolarSystemTools::CosineBinner2D& binner = data()[dir];
-				return binner.integral(fun, costhetasun);
-			}
+    template<class F>
+       double integral(const astro::SkyDir&dir, double costhetasun, const F& fun) const
+       {
+          const SolarSystemTools::CosineBinner2D binner = data()[dir];
+          return binner.integral(fun, costhetasun);
+       }
 
     //! write out to a file.
     void write(const std::string& outputfile, const std::string& tablename="ExposureSun")const;
