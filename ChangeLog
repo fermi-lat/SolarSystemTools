@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Wed Feb 29 03:28:22 PST 2012
+SolarSystemTools/src
+
+Modified Files:
+	CosineBinner2D.cxx ExposureSun.cxx 
+Log Message:
+Change implementation of Cosinebinner to sparse vector. Now we have a nice balance between speed and memory consumption.
+    *
+------------------------------------------------------------
 User: gudlaugu  Wed Feb 29 03:28:21 PST 2012
 SolarSystemTools/SolarSystemTools
 
