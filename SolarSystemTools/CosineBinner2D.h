@@ -3,7 +3,7 @@
 
 @author G. Johannesson
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/CosineBinner2D.h,v 1.3 2012/02/17 01:49:50 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/CosineBinner2D.h,v 1.4 2012/02/29 11:28:21 gudlaugu Exp $
 */
 
 #ifndef SolarSystemTools_CosineBinner2D_h
@@ -31,22 +31,22 @@ public:
     typedef std::vector<double>::const_iterator const_iterator;
     typedef std::vector<double>::iterator iterator;
 
-    /// the binning function: add value to the selected bin, if costheta1 and costheta2 in range
-    void fill(double costheta1, double costheta2, double value);
+    /// the binning function: add value to the selected bin, if costheta and theta in range
+    void fill(double costheta, double theta, double value);
     
-    /// the binning function: add value to the selected bin, if costheta1 and costheta2 in range
+    /// the binning function: add value to the selected bin, if costheta and theta in range
     //! alternate version for phi binning.
-    //! @param costheta1 cos(theta1)
-    //! @param costheta2 cos(theta2)
+    //! @param costheta cos(theta1)
+    //! @param theta cos(theta2)
     //! @param phi value of phi, radians
-    void fill(double costheta1, double costheta2, double phi, double value);
+    void fill(double costheta, double theta, double phi, double value);
 
     /// reference to the contents of the bin containing the cos(theta) value
     //! version that has phi as well (operator() allows multiple args)
-    //! @param costheta1 cos(theta1)
-    //! @param costheta2 cos(theta2)
-    double& operator()(double costheta1, double costheta2, double phi=-3*M_PI);
-    double operator()(double costheta1, double costheta2, double phi=-3*M_PI)const;
+    //! @param costheta cos(theta1)
+    //! @param theta cos(theta2)
+    double& operator()(double costheta, double theta, double phi=-3*M_PI);
+    double operator()(double costheta, double theta, double phi=-3*M_PI)const;
 
     /// Provide access through the real index
     double& operator[](size_t i);
@@ -58,11 +58,13 @@ public:
     iterator end() {return std::vector<double>::end();}
     const_iterator end() const {return std::vector<double>::end();}
 
+		CosineBinner2D & operator += (const CosineBinner2D &other);
+
     /// cos(theta1) for the iterator
-    double costheta1(const const_iterator &i)const;
+    double costheta(const const_iterator &i)const;
 
     /// cos(theta2) for the iterator
-    double costheta2(const const_iterator &i) const;
+    double theta(const const_iterator &i) const;
 
     /// phi for the iterator, returns negative numbers for iterators not in the phi range.
     double phi(const const_iterator &i) const;
@@ -70,56 +72,56 @@ public:
     /// True index from an iterator
     size_t index(const const_iterator &i) const;
 
-    /// integral over the range with functor accepting costheta1 and costheta2 as an arg. 
+    /// integral over the range with functor accepting costheta and theta as an arg. 
     template<class F>
     double operator()(const F& f)const
     {   
        double sum=0;
-       for ( size_t i = 0; i < m_icostheta2toi.size(); ++i ) {
-          const_iterator it = begin() + i*s_nbins1*(s_phibins+1);
-          const_iterator endit = it + s_nbins1;
+       for ( size_t i = 0; i < m_ithetatoi.size(); ++i ) {
+          const_iterator it = begin() + i*s_nbins*(s_phibins+1);
+          const_iterator endit = it + s_nbins;
           for( ; it!=endit; ++it){
              if ( (*it) != 0 )
-                sum += (*it)*f(costheta1(it), costheta2(it));
+                sum += (*it)*f(costheta(it), theta(it));
           }
        }
        return sum; 
 
     }
-    /// integral over the costheta1 range for a given costheta2 with functor accepting costheta1 as an arg. 
+    /// integral over the costheta range for a given theta with functor accepting costheta as an arg. 
     template<class F>
-    double operator()(const F& f, double costheta2)const
+    double operator()(const F& f, double theta)const
     {   
        double sum=0;
-			 const size_t icostheta2 = cosine_index2(costheta2);
-       std::vector<std::pair<size_t,size_t> >::const_iterator iit = icostheta2toi(icostheta2);
-       if ( iit != m_icostheta2toi.end() && iit->first == icostheta2 ) {
+			 const size_t itheta = theta_index(theta);
+       std::vector<std::pair<size_t,size_t> >::const_iterator iit = ithetatoi(itheta);
+       if ( iit != m_ithetatoi.end() && iit->first == itheta ) {
           const size_t i2 = iit->second;
-          const_iterator it = begin() + i2*s_nbins1*(s_phibins+1);
-          const_iterator endit = it + s_nbins1;
+          const_iterator it = begin() + i2*s_nbins*(s_phibins+1);
+          const_iterator endit = it + s_nbins;
           for( ; it != endit; ++it){
              if ( (*it) != 0 ) 
-                sum += (*it)*f(costheta1(it));
+                sum += (*it)*f(costheta(it));
           }
        }
        return sum; 
 
     }
                            
-    /// integral over the costheta1,phi range for a given costheta2 with functor accepting costheta1,phi as an arg. 
+    /// integral over the costheta,phi range for a given theta with functor accepting costheta,phi as an arg. 
     template<class G>
-    double integral(const G& f, double costheta2)const
+    double integral(const G& f, double theta)const
     {   
        double sum=0;
-			 const size_t icostheta2 = cosine_index2(costheta2);
-       std::vector<std::pair<size_t,size_t> >::const_iterator iit = icostheta2toi(icostheta2);
-       if ( iit != m_icostheta2toi.end() && iit->first == icostheta2 ) {
+			 const size_t itheta = theta_index(theta);
+       std::vector<std::pair<size_t,size_t> >::const_iterator iit = ithetatoi(itheta);
+       if ( iit != m_ithetatoi.end() && iit->first == itheta ) {
           const size_t i2 = iit->second;
-          const_iterator it = begin()+i2*s_nbins1*(s_phibins+1)+s_nbins1;
-          const_iterator endit = it+s_nbins1*s_phibins;
+          const_iterator it = begin()+i2*s_nbins*(s_phibins+1)+s_nbins;
+          const_iterator endit = it+s_nbins*s_phibins;
           for( ; it != endit; ++it){
              if ( (*it) != 0 )
-                sum += (*it)*f.integral(costheta1(it), phi(it));
+                sum += (*it)*f.integral(costheta(it), phi(it));
           }
        }
        return sum; 
@@ -130,12 +132,12 @@ public:
     double integral(const G& f)const
     {   
        double sum=0;
-       for ( size_t i = 0; i < m_icostheta2toi.size(); ++i ) {
-          const_iterator it = begin() + i*s_nbins1*(s_phibins+1)+s_nbins1;
-          const_iterator endit = it + s_nbins1*s_phibins;
+       for ( size_t i = 0; i < m_ithetatoi.size(); ++i ) {
+          const_iterator it = begin() + i*s_nbins*(s_phibins+1)+s_nbins;
+          const_iterator endit = it + s_nbins*s_phibins;
           for( ; it!=endit; ++it){
              if ( (*it) != 0 )
-                sum += (*it)*f(costheta1(it), costheta2(it), phi(it));
+                sum += (*it)*f(costheta(it), theta(it), phi(it));
           }
        }
        return sum; 
@@ -144,43 +146,46 @@ public:
 
 
     /// define the binning scheme with class (static) variables
-    static void setBinning(double cosmin1=0., double cosmin2=-1., size_t nbins1=40, size_t nbins2=80, bool sqrt_weight=true);
+    static void setBinning(double cosmin=0., double thmax=-1., size_t nbins=40, size_t nthbins=80, bool sqrt_weight=true);
 
     //! set phibins to enable binning in phi
     //! phibins [15] note default is 3 degrees per bin, since folded about 0-45 degrees.
     static void setPhiBins(size_t phibins=15);
 
     static std::string thetaBinning();
-    static double cosmin1();
-    static double cosmin2();
-    static size_t nbins1();
-    static size_t nbins2();
+    static double cosmin();
+    static double thmax();
+    static size_t nbins();
+    static size_t nthbins();
     static size_t nphibins();
 
     //! access to fundamental binning
-    static size_t cosine_index1(double costheta1);
-    static size_t cosine_index2(double costheta2);
+    static size_t cosine_index(double costheta);
+    static size_t theta_index(double theta);
     static size_t phi_index(double phi);
-    static size_t index(double costheta1, double costheta2, double phi);
+    static size_t index(double costheta, double theta, double phi);
+		static void cosThetaBins(std::vector<double> &costheta);
+		static void thetaBins(std::vector<double> &theta);
+		static void phiBins(std::vector<double> &phi);
 
     //! the translation from 0-2pi to 0-pi/4
     static double folded_phi(double phi);
 private:
 
-		//Store sparse values of costheta2
-    std::vector<std::pair<size_t,size_t> > m_icostheta2toi;
-    std::vector<std::pair<size_t,size_t> > m_itoicostheta2;
+		//Store sparse values of theta
+    std::vector<std::pair<size_t,size_t> > m_ithetatoi;
+    std::vector<std::pair<size_t,size_t> > m_itoitheta;
 
 		static bool less_than(const std::pair<size_t,size_t> &a, const std::pair<size_t,size_t> &b) { return a.first < b.first; }
-		std::vector<std::pair<size_t,size_t> >::const_iterator icostheta2toi(size_t icostheta) const;
-		std::vector<std::pair<size_t,size_t> >::iterator icostheta2toi(size_t icostheta);
-		std::vector<std::pair<size_t,size_t> >::const_iterator itoicostheta2(size_t i) const;
+		std::vector<std::pair<size_t,size_t> >::const_iterator ithetatoi(size_t itheta) const;
+		std::vector<std::pair<size_t,size_t> >::iterator ithetatoi(size_t itheta);
+		std::vector<std::pair<size_t,size_t> >::const_iterator itoitheta(size_t i) const;
 
-    size_t icostheta2(const CosineBinner2D::const_iterator &i) const;
-    size_t aindex(double costheta1, double costheta2, double phi) const;
+    size_t itheta(const CosineBinner2D::const_iterator &i) const;
+    size_t aindex(double costheta, double theta, double phi) const;
 
-    static double s_cosmin1, s_cosmin2; ///< minimum value of cos(theta)
-    static size_t s_nbins1, s_nbins2;  ///< number of costheta bins
+    static double s_cosmin, s_thmax; ///< minimum value of cos(theta)
+    static size_t s_nbins, s_nthbins;  ///< number of costheta bins
     static bool  s_sqrt_weight; ///< true to use sqrt function, otherwise linear
     static size_t s_phibins; ///< number of phi bins
 };

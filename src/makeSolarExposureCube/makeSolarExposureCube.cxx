@@ -3,7 +3,7 @@
  * @brief Create an Exposure hypercube including distance from solar center
  * @author G. Johannesson
  *
- *  $Header: $
+ *  $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
  */
 
 #include <cstdlib>
@@ -27,7 +27,7 @@
 
 #include "SolarSystemTools/CosineBinner2D.h"
 
-#include "SolarSystemTools/LikeExposureSun.h"
+#include "SolarSystemTools/ExposureCubeSun.h"
 #include "Likelihood/RoiCuts.h"
 
 namespace {
@@ -62,13 +62,13 @@ namespace {
 }
 
 /**
- * @class ExposureCubeSunSun
+ * @class ExposureCubeSun
  * @brief Class to encapsulate methods for creating an exposure
- * hypercube in (ra, dec, cos_theta, cos_theta_sun) using the LikeExposureSun class.
+ * hypercube in (ra, dec, cos_theta, cos_theta_sun) using the ExposureCubeSun class.
  *
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/Likelihood/src/makeExposureCubeSun/makeExposureCube.cxx,v 1.56 2009/12/16 19:16:23 elwinter Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
  */
 class ExposureCubeSun : public st_app::StApp {
 public:
@@ -90,7 +90,7 @@ public:
    virtual void banner() const;
 private:
    st_app::AppParGroup & m_pars;
-   SolarSystemTools::LikeExposureSun * m_exposure;
+   SolarSystemTools::ExposureCubeSun * m_exposure;
    Likelihood::RoiCuts * m_roiCuts;
    void readRoiCuts();
    void createDataCube();
@@ -103,7 +103,7 @@ private:
 
 st_app::StAppFactory<ExposureCubeSun> myAppFactory("gtltcubesun");
 
-std::string ExposureCubeSun::s_cvs_id("$Name: HEAD $");
+std::string ExposureCubeSun::s_cvs_id("$Name:  $");
 
 void ExposureCubeSun::banner() const {
    int verbosity = m_pars["chatter"];
@@ -162,14 +162,14 @@ void ExposureCubeSun::writeDateKeywords(const std::string & outfile,
    extnames.push_back("EXPOSURESUN");
    extnames.push_back("WEIGHTED_EXPOSURESUN");
    extnames.push_back("CTHETABOUNDS");
-   extnames.push_back("CTHETASUNBOUNDS");
+   extnames.push_back("THETASUNBOUNDS");
    extnames.push_back("GTI");
    for (std::vector<std::string>::const_iterator name(extnames.begin());
         name != extnames.end(); ++name) {
       tip::Extension * hdu(fileSvc.editExtension(outfile, *name));
       st_facilities::Util::writeDateKeywords(hdu, tstart, tstop, *name!="");
       if (*name == "") {
-         hdu->getHeader()["CREATOR"].set("gtltcube " + getVersion());
+         hdu->getHeader()["CREATOR"].set("gtltcubesun " + getVersion());
          std::string file_version = m_pars["file_version"];
          hdu->getHeader()["VERSION"].set(file_version);
       }
@@ -185,15 +185,18 @@ void ExposureCubeSun::readRoiCuts() {
       std::vector<std::string> eventFiles;
       st_facilities::Util::resolve_fits_files(event_file, eventFiles);
       m_roiCuts->readCuts(eventFiles, evtable, false);
-   } else {
-      double tmin = m_pars["tmin"];
-      double tmax = m_pars["tmax"];
-      m_roiCuts->setCuts(0, 0, 180, 30, 3e5, tmin, tmax, -1, true);
    }
+	 //Override the maximum and minimum time, convenince for splitting time
+	 //ranges into smaller with a monolithic ft1 file.
+   double tmin = m_pars["tmin"];
+   double tmax = m_pars["tmax"];
+	 if ( tmin == 0 ) tmin = m_roiCuts->minTime();
+	 if ( tmax == 0 ) tmax = m_roiCuts->maxTime();
+   m_roiCuts->setCuts(0, 0, 180, 30, 3e5, tmin, tmax, -1, true);
 }
 
 void ExposureCubeSun::createDataCube() {
-   st_stream::StreamFormatter formatter("gtltcube", 
+   st_stream::StreamFormatter formatter("gtltcubesun", 
                                         "createDataCube", 2);
 
    std::vector<std::pair<double, double> > timeCuts;
@@ -230,9 +233,10 @@ void ExposureCubeSun::createDataCube() {
       SolarSystemTools::CosineBinner2D::setPhiBins(nphibins);
    }
 
-   m_exposure = new SolarSystemTools::LikeExposureSun(m_pars["binsz"], 
+   m_exposure = new SolarSystemTools::ExposureCubeSun(m_pars["binsz"], 
                                              m_pars["dcostheta"],
-                                             m_pars["dcosthetasun"],
+                                             m_pars["dthetasun"],
+                                             m_pars["thetasunmax"],
                                              timeCuts, gtis, zmax);
    std::string scFile = m_pars["scfile"];
    st_facilities::Util::file_ok(scFile);

@@ -4,7 +4,7 @@
  * integrations
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/HealpixExposureSun.h,v 1.2 2012/02/13 22:24:36 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/HealpixExposureSun.h,v 1.1 2012/02/15 03:03:50 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_HealpixExposureSun_h
@@ -47,7 +47,7 @@ public:
 
 	 class Fun {
 		 public:
-			 virtual double operator() (double costhetasun) const = 0;
+			 virtual double operator() (double thetasun) const = 0;
 			 virtual ~Fun() {}
 	 };
 
@@ -63,8 +63,8 @@ public:
    /// @param energy True photon energy (MeV)
    /// @param ra Right Ascension of desired sky location (degrees)
    /// @param dec Declination of desired sky location (degrees)
-   /// @param costhetasun Cosine of the angle from sun
-   double operator()(double energy, double ra, double dec, double costhetasun) const;
+   /// @param thetasun the angle from sun
+   double operator()(double energy, double ra, double dec, double thetasun) const;
 
    /// @return Integral of function f integrated over solar angle
    /// @param energy True photon energy (MeV)
@@ -78,8 +78,8 @@ public:
       return m_energies;
    }
 
-   const std::vector<double> & costhetasun() const {
-      return m_costhetasun;
+   const std::vector<double> & thetasun() const {
+      return m_thetasun;
    }
 
    void setBoundaryFlag(bool enforce_boundaries) {
@@ -111,7 +111,7 @@ private:
 	 healpix::HealpixArray<pixel> m_exposureMap;
 
    std::vector<double> m_energies;
-   std::vector<double> m_costhetasun;
+   std::vector<double> m_thetasun;
 
    double m_costhmin;
    double m_costhmax;

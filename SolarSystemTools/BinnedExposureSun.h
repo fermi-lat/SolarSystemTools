@@ -4,7 +4,7 @@
  * integrations
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/BinnedExposureSun.h,v 1.2 2012/02/13 22:24:36 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/BinnedExposureSun.h,v 1.3 2012/02/15 03:03:50 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_BinnedExposureSun_h
@@ -63,8 +63,8 @@ public:
    /// @param energy True photon energy (MeV)
    /// @param ra Right Ascension of desired sky location (degrees)
    /// @param dec Declination of desired sky location (degrees)
-   /// @param costhetasun Cosine of the angle from sun
-   double operator()(double energy, double ra, double dec, double costhetasun) const;
+   /// @param thetasun the angle from sun
+   double operator()(double energy, double ra, double dec, double thetasun) const;
 
    void writeOutput(const std::string & filename) const;
 
@@ -72,8 +72,8 @@ public:
       return m_energies;
    }
 
-   const std::vector<double> & costhetasun() const {
-      return m_costhetasun;
+   const std::vector<double> & thetasun() const {
+      return m_thetasun;
    }
 
    void setBoundaryFlag(bool enforce_boundaries) {
@@ -120,7 +120,7 @@ private:
    std::vector<float> m_exposureMap;
 
    std::vector<double> m_energies;
-   std::vector<double> m_costhetasun;
+   std::vector<double> m_thetasun;
 
    // Coordinate system parameters to be fed to SkyProj.  These are
    // either set to all-sky values (CAR, CEL) or to match the geometry

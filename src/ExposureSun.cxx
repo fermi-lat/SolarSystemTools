@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.3 2012/02/17 01:49:51 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.4 2012/02/29 11:28:22 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -40,16 +40,16 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
     std::string thetabinstring;
     hdr["THETABIN"].get(thetabinstring);
     bool thetabin = (thetabinstring == "COSTHETA")? false: true;
+    int nbins;
+    hdr["NBINS"].get(nbins);
     int nbrbins;
     hdr["NBRBINS"].get(nbrbins);
-    int nbrbins1;
-    hdr["NBRBINS1"].get(nbrbins1);
-    double cosmin1;
-    hdr["COSMIN1"].get(cosmin1);
-    int nbrbins2;
-    hdr["NBRBINS2"].get(nbrbins2);
-    double cosmin2;
-    hdr["COSMIN2"].get(cosmin2);
+    double cosmin;
+    hdr["COSMIN"].get(cosmin);
+    int nthbins;
+    hdr["NTHBINS"].get(nthbins);
+    double thmax;
+    hdr["THMAX"].get(thmax);
 
     int nphibins(0);
     try{
@@ -68,7 +68,7 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
     astro::SkyDir::CoordSystem coordsys = (check == "GAL")?
         astro::SkyDir::GALACTIC: astro::SkyDir::EQUATORIAL;
 
-    CosineBinner2D::setBinning(cosmin1, cosmin2, nbrbins1, nbrbins2, thetabin);
+    CosineBinner2D::setBinning(cosmin, thmax*M_PI/180., nbrbins, nthbins, thetabin);
     if( nphibins>0){
         CosineBinner2D::setPhiBins(nphibins);
     }
@@ -105,7 +105,7 @@ inline int side_from_degrees(double pixelsize){
     return n; 
 } 
 
-ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double cosbinsizesun, double zcut, bool weighted)
+ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double thbinsize, double thmax, double zcut, bool weighted)
 : SkyExposure2D(
     SkyBinner2D(Healpix(
       side_from_degrees(pixelsize),  // nside
@@ -116,16 +116,17 @@ ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double cosbinsizes
 , m_weighted(weighted)
 , m_solar_dir(astro::SolarSystem::SUN)
 {
+	double thmaxrad = thmax*M_PI/180.;
     unsigned int cosbins = static_cast<unsigned int>(1./cosbinsize);
-    unsigned int cosbinssun = static_cast<unsigned int>(2./cosbinsizesun);
-    if( cosbins != CosineBinner2D::nbins1() || cosbinssun != CosineBinner2D::nbins2() ) { 
-        unsigned int allbins(cosbins*cosbinssun);
+    unsigned int thbins = static_cast<unsigned int>(sqrt(thmax/thbinsize));
+    if( cosbins != CosineBinner2D::nbins() || thbins != CosineBinner2D::nthbins() ) { 
+        unsigned int allbins(cosbins*thbins);
         if( CosineBinner2D::nphibins() > 0 ){
             // add size for extra phi bins.
             allbins += allbins * CosineBinner2D::nphibins();
         }
         
-        CosineBinner2D::setBinning(0, -1, cosbins, cosbinssun);
+        CosineBinner2D::setBinning(0, thmaxrad, cosbins, thbins);
     }
     create_cache();
 }
@@ -188,9 +189,9 @@ public:
             if( m_use_phi) {
                 const CLHEP::Hep3Vector instrument_dir( pixeldir.transform(m_rot) );
                 const double costheta(instrument_dir.z()), phi(instrument_dir.phi());
-                x.first->fill( costheta, pixeldir.dot(m_dirsun), phi , m_deltat);
+                x.first->fill( costheta, acos(pixeldir.dot(m_dirsun)), phi , m_deltat);
             } else {
-               x.first->fill( pixeldir.dot(m_dirz), pixeldir.dot(m_dirsun), m_deltat);
+               x.first->fill( pixeldir.dot(m_dirz), acos(pixeldir.dot(m_dirsun)), m_deltat);
             }
 
             m_total += m_deltat;
@@ -245,8 +246,18 @@ void ExposureSun::fill_zenith(const astro::SkyDir& dirz,const astro::SkyDir& dir
 
 void ExposureSun::write(const std::string& outputfile, const std::string& tablename)const
 {
-    // add a table to the file
-    tip::IFileSvc::instance().appendTable(outputfile, tablename);
+		// Check and see if the tablename is already in the file, add it if it is
+		// missing
+	  tip::FileSummary summary;
+		tip::IFileSvc::instance().getFileSummary(outputfile, summary);
+		bool add = true;
+		for (size_t i(0); i < summary.size(); ++i) {
+			if (summary[i].getExtId() == tablename) {
+				add = false;
+				break;
+			}
+		}
+    if (add) tip::IFileSvc::instance().appendTable(outputfile, tablename);
     tip::Table & table = *tip::IFileSvc::instance().editTable( outputfile, tablename);
 
     // this is a work-around for a bug in tip v2r1p1
@@ -286,15 +297,30 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
     hdr["FIRSTPIX"].set(0); 
     hdr["LASTPIX"].set(data().size() - 1); 
     hdr["THETABIN"].set(CosineBinner2D::thetaBinning());
-    hdr["NBRBINS"].set(CosineBinner2D::nbins1()*CosineBinner2D::nbins2());
-    hdr["NBRBINS1"].set(CosineBinner2D::nbins1());
-    hdr["COSMIN1"].set(CosineBinner2D::cosmin1());
-    hdr["NBRBINS2"].set(CosineBinner2D::nbins2());
-    hdr["COSMIN2"].set(CosineBinner2D::cosmin2());
+    hdr["NBINS"].set(CosineBinner2D::nbins()*CosineBinner2D::nthbins()*(CosineBinner2D::nphibins()+1));
+    hdr["NBRBINS"].set(CosineBinner2D::nbins());
+    hdr["COSMIN"].set(CosineBinner2D::cosmin());
+    hdr["NTHBINS"].set(CosineBinner2D::nthbins());
+    hdr["THMAX"].set(CosineBinner2D::thmax()*180/M_PI);
     hdr["PHIBINS"].set(CosineBinner2D::nphibins());
 
     // need to do this to ensure file is closed when pointer goes out of scope
     delete &table;
+}
+
+ExposureSun& ExposureSun::operator += (const ExposureSun &other) {
+	//Make sure the sizes agree
+	if ( data().size() != other.data().size() )
+		throw std::runtime_error("ExposureSun::operator+=: sizes don't match");
+
+	//Loop over all the pixels and add them
+	healpix::HealpixArray<CosineBinner2D>::iterator it = data().begin();
+	healpix::HealpixArray<CosineBinner2D>::const_iterator oit = other.data().begin();
+	for ( ; it != data().end(); ++it, ++oit) {
+		(*it) += (*oit);
+	}
+
+	return (*this);
 }
 
 void ExposureSun::load(const tip::Table * scData, 

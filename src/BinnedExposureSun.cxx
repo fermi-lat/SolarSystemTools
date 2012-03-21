@@ -4,7 +4,7 @@
  * various energies and binned in angles from the sun.
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/BinnedExposureSun.cxx,v 1.2 2012/02/13 22:24:37 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/BinnedExposureSun.cxx,v 1.3 2012/02/15 03:03:51 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -127,13 +127,13 @@ BinnedExposureSun::~BinnedExposureSun() {
    delete m_proj;
 }
 
-double BinnedExposureSun::operator()(double energy, double ra, double dec, double costheta) const {
+double BinnedExposureSun::operator()(double energy, double ra, double dec, double theta) const {
    std::vector<double>::const_iterator ie = ::findNearest(m_energies, energy);
    unsigned int k = ie - m_energies.begin();
 
    int l = 0;
    for ( ; l < m_naxes[3]; ++l){
-     if ( m_costhetasun[l] < costheta && costheta < m_costhetasun[l+1] )
+     if ( m_thetasun[l] < theta && theta < m_thetasun[l+1] )
        break;
    }
 
@@ -177,9 +177,9 @@ void BinnedExposureSun::setMapGeometry(const Likelihood::CountsMap & cmap) {
    m_naxes[0] = cmap.naxis1();
    m_naxes[1] = cmap.naxis2();
    m_naxes[2] = cmap.energies().size();
-   m_naxes[3] = m_observation->expCubeSun().ncosthetaBinsSun();
+   m_naxes[3] = m_observation->expCubeSun().nthetaBinsSun();
    m_energies = cmap.energies();
-   m_observation->expCubeSun().costhetaBinsSun(m_costhetasun);
+   m_observation->expCubeSun().thetaBinsSun(m_thetasun);
    m_isGalactic = cmap.isGalactic();
 }
 
@@ -188,8 +188,8 @@ void BinnedExposureSun::setMapGeometry(const st_app::AppParGroup & pars) {
    m_naxes[0] = pars["nxpix"];
    m_naxes[1] = pars["nypix"];
    m_naxes[2] = m_energies.size();
-   m_naxes[3] = m_observation->expCubeSun().ncosthetaBinsSun();
-   m_observation->expCubeSun().costhetaBinsSun(m_costhetasun);
+   m_naxes[3] = m_observation->expCubeSun().nthetaBinsSun();
+   m_observation->expCubeSun().thetaBinsSun(m_thetasun);
    double binsz = pars["binsz"];
    m_cdelt[0] = -binsz;
    m_cdelt[1] = binsz;
@@ -211,8 +211,8 @@ void BinnedExposureSun::setMapGeometry() {
    m_naxes[0] = 360;
    m_naxes[1] = 180;
    m_naxes[2] = m_energies.size();
-   m_naxes[3] = m_observation->expCubeSun().ncosthetaBinsSun();
-   m_observation->expCubeSun().costhetaBinsSun(m_costhetasun);
+   m_naxes[3] = m_observation->expCubeSun().nthetaBinsSun();
+   m_observation->expCubeSun().thetaBinsSun(m_thetasun);
    m_crpix[0] = m_naxes[0]/2. + 0.5;
    m_crpix[1] = m_naxes[1]/2. + 0.5;
    m_crval[0] = 180.;
@@ -231,9 +231,9 @@ void BinnedExposureSun::computeMap() {
    st_stream::StreamFormatter formatter("BinnedExposureSun", "computeMap", 2);
    formatter.warn() << "Computing binned exposure map";
 
-   std::vector<double> costhetasun(m_naxes.at(3));
+   std::vector<double> thetasun(m_naxes.at(3));
    for (int j = 0; j < m_naxes.at(3); ++j) {
-     costhetasun[j] = (m_costhetasun[j]+m_costhetasun[j+1])/2.;
+     thetasun[j] = (m_thetasun[j]+m_thetasun[j+1])/2.;
    }
 
 	 //Create a cache for AEff calculations
@@ -265,7 +265,7 @@ void BinnedExposureSun::computeMap() {
                for (int l = 0; l < m_naxes.at(3); ++l) {
 								   const unsigned int indx = ((l*m_energies.size() + k)*m_naxes.at(1) + j)*m_naxes.at(0) + i;
                    m_exposureMap.at(indx)
-                     +=m_observation->expCubeSun().value(dir, costhetasun[l], aeff, m_energies.at(k));
+                     +=m_observation->expCubeSun().value(dir, thetasun[l], aeff, m_energies.at(k));
                }
          }
       }
@@ -319,12 +319,12 @@ void BinnedExposureSun::writeOutput(const std::string & filename) const {
    }
    header["CTYPE3"].set("log_Energy");
 
-   header["CRVAL4"].set(m_costhetasun[0]);
+   header["CRVAL4"].set(m_thetasun[0]);
    header["CRPIX4"].set(1);
    if (m_naxes[3] == 1) {
      header["CDELT4"].set(0);
    } else {
-     header["CDELT4"].set(m_costhetasun[1]-m_costhetasun[0]);
+     header["CDELT4"].set(m_thetasun[1]-m_thetasun[0]);
    }
 
    delete image;
@@ -356,8 +356,8 @@ void BinnedExposureSun::writeOutput(const std::string & filename) const {
    tip::Table::Record & record2 = *row;
 
    for (int i = 0; i < m_naxes[3]; ++i, ++row) {
-      record2["CosTheta_Min"].set(m_costhetasun[i]);
-      record2["CosTheta_Max"].set(m_costhetasun[i+1]);
+      record2["CosTheta_Min"].set(m_thetasun[i]);
+      record2["CosTheta_Max"].set(m_thetasun[i+1]);
    }
 
    delete table;
