@@ -1,5 +1,5 @@
 # Definition of Livetime cube file (see LS-003)
-# $Header: $
+# $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/data/LivetimeCubeSunTemplate,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
 
 SIMPLE  = T                        / file does conform to FITS standard
 BITPIX  = 8                        / number of bits per data pixel
@@ -64,8 +64,11 @@ NSIDE   =                          / Number of pixels per side per dodecahedron 
 FIRSTPIX=                          / First pixel index
 LASTPIX =                          / Last pixel index
 THETABIN= 'SQRT(1-COSTHETA)'       / Costheta binning scheme
+NBINS   =                          / Total number of bins
 NBRBINS =                          / Number of costheta bins
 COSMIN  =                       0. / Minimum costheta value
+NTHBINS =                          / Number of thetasun bins
+THMAX   =                     3.14 / Maximum theta value (radians)
 PHIBINS =                        0 / Number of phi bins
 NDSKEYS =                        1 / # of data subspace keywords in header
 DSTYP1  = 'TIME    '               / 
@@ -111,8 +114,11 @@ NSIDE   =                          / Number of pixels per side per dodecahedron 
 FIRSTPIX=                          / First pixel index
 LASTPIX =                          / Last pixel index
 THETABIN= 'SQRT(1-COSTHETA)'       / Costheta binning scheme
+NBINS   =                          / Total number of bins
 NBRBINS =                          / Number of costheta bins
 COSMIN  =                       0. / Minimum costheta value
+NTHBINS =                          / Number of thetasun bins
+THMAX   =                     3.14 / Maximum theta value (radians)
 PHIBINS =                        0 / Number of phi bins
 NDSKEYS =                        1 / # of data subspace keywords in header
 DSTYP1  = 'TIME    '               / 
@@ -178,15 +184,15 @@ TSTART  =                          / mission time of the obs. start
 TSTOP   =                          / mission time of the obs. end
 OBSERVER= 'Peter Michelson'           / LAT PI
 ORIGIN  = 'LISOC'                     / name of organization making file
-TTYPE1  = 'CTHETA_MIN'         / Lower boundary of the COSTHETA bin
+TTYPE1  = 'THETA_MIN'         / Lower boundary of the COSTHETA bin
 TFORM1  = 'E'                  / Data format of this field
-TLMIN1  = -1.0                    / minimum value
-TLMAX1  = 1.0                     / maximum value
-TTYPE2  = 'CTHETA_MAX'         / Upper boundary of the COSTHETA bin
+TLMIN1  = 0.0                    / minimum value
+TLMAX1  = 180.0                     / maximum value
+TTYPE2  = 'THETA_MAX'         / Upper boundary of the COSTHETA bin
 TFORM2  = 'E'                  / Data format of this field
-TLMIN2  = -1.0                    / minimum value
-TLMAX2  = 1.0                     / maximum value
-EXTNAME = 'CTHETASUNBOUNDS'       / Extension name
+TLMIN2  = 0.0                    / minimum value
+TLMAX2  = 180.0                     / maximum value
+EXTNAME = 'THETASUNBOUNDS'       / Extension name
 HDUCLASS= 'OGIP'               / Format confirms to OGIP standard
 #HDUCLAS1=                      / Extension contains ??
 #HDUCLAS2=                      / Extension contains ??

@@ -4,7 +4,7 @@
  * various energies.
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/HealpixExposureSun.cxx,v 1.2 2012/02/13 22:24:37 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/HealpixExposureSun.cxx,v 1.1 2012/02/15 03:03:51 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -60,14 +60,14 @@ namespace {
 namespace SolarSystemTools {
 
 HealpixExposureSun::HealpixExposureSun() : m_observation(0),
-                                   m_costhmin(-1), m_costhmax(1),
+                                   m_costhmin(0), m_costhmax(1),
                                    m_enforce_boundaries(false) {}
 
 HealpixExposureSun::HealpixExposureSun(const std::vector<double> & energies,
                                const Observation & observation,
                                const st_app::AppParGroup * pars) 
    : m_energies(energies), m_observation(&observation),
-     m_costhmin(-1), m_costhmax(1),m_enforce_boundaries(false)  {
+     m_costhmin(0), m_costhmax(1),m_enforce_boundaries(false)  {
    if (pars) {
       setMapGeometry(*pars);
       setCosThetaBounds(*pars);
@@ -78,7 +78,7 @@ HealpixExposureSun::HealpixExposureSun(const std::vector<double> & energies,
 }
 
 HealpixExposureSun::HealpixExposureSun(const std::string & filename) 
-   : m_observation(0), m_costhmin(-1), m_costhmax(1),
+   : m_observation(0), m_costhmin(0), m_costhmax(1),
      m_enforce_boundaries(false) {
 
     const tip::Table & table=*tip::IFileSvc::instance().readTable(filename, "EXPOSURE");
@@ -135,17 +135,17 @@ HealpixExposureSun::HealpixExposureSun(const std::string & filename)
    }
 
    std::auto_ptr<const tip::Table>
-      costhetasun(tip::IFileSvc::instance().readTable(filename, "Costhetasun"));
+      thetasun(tip::IFileSvc::instance().readTable(filename, "thetasun"));
 
-	 m_costhetasun.clear();
-	 it = costhetasun->begin();
+	 m_thetasun.clear();
+	 it = thetasun->begin();
 	 //Need to add the first value separately
 	 double value;
-	 row["CosTheta_Min"].get(value);
-	 m_costhetasun.push_back(value);
-   for ( ; it != costhetasun->end(); ++it) {
-      row["CosTheta_Max"].get(value);
-      m_costhetasun.push_back(value);
+	 row["Theta_Min"].get(value);
+	 m_thetasun.push_back(value*M_PI/180.);
+   for ( ; it != thetasun->end(); ++it) {
+      row["Theta_Max"].get(value);
+      m_thetasun.push_back(value*M_PI/180.);
    }
 
 }
@@ -159,29 +159,29 @@ double HealpixExposureSun::integrate(double energy, double ra, double dec, const
 	 const pixel & pix = m_exposureMap[dir];
 
 	 double integ(0);
-	 pixel::const_iterator it = pix.lower_bound(k*(m_costhetasun.size()-1));
-	 pixel::const_iterator end = pix.upper_bound((k+1)*(m_costhetasun.size()-1)-1);
+	 pixel::const_iterator it = pix.lower_bound(k*(m_thetasun.size()-1));
+	 pixel::const_iterator end = pix.upper_bound((k+1)*(m_thetasun.size()-1)-1);
 	 for ( ; it != end; ++it ) {
-		 const size_t cind = (*it).first-k*(m_costhetasun.size()-1);
-		 integ += (*it).second * f(0.5*(m_costhetasun[cind]+m_costhetasun[cind+1]));
+		 const size_t cind = (*it).first-k*(m_thetasun.size()-1);
+		 integ += (*it).second * f(cos(0.5*(m_thetasun[cind]+m_thetasun[cind+1])));
 	 }
 
 	 return integ;
 }
 
-double HealpixExposureSun::operator()(double energy, double ra, double dec, double costheta) const {
+double HealpixExposureSun::operator()(double energy, double ra, double dec, double theta) const {
    std::vector<double>::const_iterator ie = ::findNearest(m_energies, energy);
    unsigned int k = ie - m_energies.begin();
 
    int l = 0;
-   for ( ; l < m_costhetasun.size()-1; ++l){
-     if ( m_costhetasun[l] < costheta && costheta < m_costhetasun[l+1] )
+   for ( ; l < m_thetasun.size()-1; ++l){
+     if ( m_thetasun[l] < theta && theta < m_thetasun[l+1] )
        break;
    }
 
 	 const astro::SkyDir dir(ra,dec);
 
-	 const unsigned int indx = l + k*(m_costhetasun.size()-1);
+	 const unsigned int indx = l + k*(m_thetasun.size()-1);
 
 	 pixel::const_iterator it = m_exposureMap[dir].find(indx);
 
@@ -204,7 +204,7 @@ inline int side_from_degrees(double pixelsize){
 } 
 
 void HealpixExposureSun::setMapGeometry(const st_app::AppParGroup & pars) {
-   m_observation->expCubeSun().costhetaBinsSun(m_costhetasun);
+   m_observation->expCubeSun().thetaBinsSun(m_thetasun);
    double binsz = pars["binsz"];
 	 if (binsz > 0) {
 		m_exposureMap.setHealpix(healpix::Healpix(side_from_degrees(binsz), healpix::Healpix::NESTED, astro::SkyDir::EQUATORIAL));
@@ -214,7 +214,7 @@ void HealpixExposureSun::setMapGeometry(const st_app::AppParGroup & pars) {
 }
 
 void HealpixExposureSun::setMapGeometry() {
-   m_observation->expCubeSun().costhetaBinsSun(m_costhetasun);
+   m_observation->expCubeSun().thetaBinsSun(m_thetasun);
 	 m_exposureMap.setHealpix(m_observation->expCubeSun().getHealpix());
 }
 
@@ -223,9 +223,9 @@ void HealpixExposureSun::computeMap() {
    st_stream::StreamFormatter formatter("HealpixExposureSun", "computeMap", 2);
    formatter.warn() << "Computing binned exposure map";
 
-   std::vector<double> costhetasun(m_costhetasun.size()-1);
-   for (int j = 0; j < costhetasun.size(); ++j) {
-     costhetasun[j] = (m_costhetasun[j]+m_costhetasun[j+1])/2.;
+   std::vector<double> thetasun(m_thetasun.size()-1);
+   for (int j = 0; j < thetasun.size(); ++j) {
+     thetasun[j] = (m_thetasun[j]+m_thetasun[j+1])/2.;
    }
 
 	 //Create a cache for AEff calculations
@@ -246,10 +246,10 @@ void HealpixExposureSun::computeMap() {
                                            
          for (unsigned int k = 0; k < m_energies.size(); k++) {
                const BinnedExposureSun::Aeff &aeff = *aeffs[k]; 
-               for (int l = 0; l < costhetasun.size(); ++l) {
-									 const double exposure = m_observation->expCubeSun().value(dir, costhetasun[l], aeff, m_energies.at(k));
+               for (int l = 0; l < thetasun.size(); ++l) {
+									 const double exposure = m_observation->expCubeSun().value(dir, thetasun[l], aeff, m_energies.at(k));
 									 if (exposure != 0) {
-								      const unsigned int indx = l + k*costhetasun.size();
+								      const unsigned int indx = l + k*thetasun.size();
 									    m_exposureMap[dir][indx] += exposure;
 									 }
                }
@@ -299,7 +299,8 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
 	 header["FIRSTPIX"].set(0); 
 	 header["LASTPIX"].set(m_exposureMap.size() - 1); 
 	 header["NENERGIES"].set(m_energies.size());
-	 header["NTHBINS"].set(m_costhetasun.size()-1);
+	 header["NTHBINS"].set(m_thetasun.size()-1);
+	 header["NBINS"].set((m_thetasun.size()-1)*m_energies.size());
    header["TELESCOP"].set("GLAST");
    header["INSTRUME"].set("LAT");
    header["DATE-OBS"].set("");
@@ -323,19 +324,19 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
 
    delete table;
 
-   ext = "COSTHETASUN";
+   ext = "THETASUN";
    tip::IFileSvc::instance().appendTable(filename, ext);
    table = tip::IFileSvc::instance().editTable(filename, ext);
-   table->appendField("CosTheta_Min", "1D");
-   table->appendField("CosTheta_Max", "1D");
-   table->setNumRecords(m_costhetasun.size()-1);
+   table->appendField("Theta_Min", "1D");
+   table->appendField("Theta_Max", "1D");
+   table->setNumRecords(m_thetasun.size()-1);
 
    row = table->begin();
    tip::Table::Record & record2 = *row;
 
-   for (size_t i = 0; i < m_costhetasun.size()-1; ++i, ++row) {
-      record2["CosTheta_Min"].set(m_costhetasun[i]);
-      record2["CosTheta_Max"].set(m_costhetasun[i+1]);
+   for (size_t i = 0; i < m_thetasun.size()-1; ++i, ++row) {
+      record2["Theta_Min"].set(m_thetasun[i]*180./M_PI);
+      record2["Theta_Max"].set(m_thetasun[i+1]*180./M_PI);
    }
 
    delete table;
@@ -343,7 +344,7 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
 
 void HealpixExposureSun::setCosThetaBounds(const st_app::AppParGroup & pars) {
    double thmin = pars["thmin"];
-   if (thmin > 0) {
+   if (thmin > 0.) {
       m_costhmax = std::cos(thmin*M_PI/180.);
    }
    double thmax = pars["thmax"];

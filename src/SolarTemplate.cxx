@@ -4,7 +4,7 @@
  * from solar binned exposure and solar profile
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarTemplate.cxx,v 1.2 2012/02/13 22:24:37 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarTemplate.cxx,v 1.1 2012/02/15 03:03:52 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -147,7 +147,12 @@ void SolarTemplate::computeMap() {
    st_stream::StreamFormatter formatter("SolarTemplate", "computeMap", 2);
    formatter.warn() << "Computing binned solarTemplate map";
 
-   const std::vector<double> &costhetasun = m_expsun.costhetasun();
+   const std::vector<double> &thetasun = m_expsun.thetasun();
+   std::vector<double> costhetasun(thetasun.size());
+   for (size_t i = 0; i < costhetasun.size(); ++i){
+	   costhetasun[i] = cos(thetasun[i]);
+	 }
+
 	 //Create the average intensity as a function of energy and angle
 	 std::vector<double> intensityCache(m_energies.size()*(costhetasun.size()-1));
    for (unsigned int k = 0; k < m_energies.size(); k++) {

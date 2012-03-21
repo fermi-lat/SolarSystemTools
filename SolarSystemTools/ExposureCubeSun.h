@@ -3,7 +3,7 @@
  * @brief Exposure time hypercube.
  * @author G. Johannesson <gudlaugu@glast2.stanford.edu>
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.2 2012/02/13 22:24:36 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.3 2012/02/15 03:03:50 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_ExposureCubeSun_h
@@ -33,7 +33,7 @@ namespace SolarSystemTools {
  *
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.2 2012/02/13 22:24:36 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.3 2012/02/15 03:03:50 gudlaugu Exp $
  */
 
 class ExposureCubeSun {
@@ -43,7 +43,15 @@ public:
    ExposureCubeSun() : m_exposure(0), m_weightedExposure(0), 
                     m_efficiencyFactor(0),
                     m_haveFile(false), m_fileName(""),
-                    m_hasPhiDependence(false) {}
+                    m_hasPhiDependence(false),
+       m_timeCuts(std::vector<std::pair<double, double> >(0)),
+       m_gtis(std::vector<std::pair<double, double> >(0))
+	{}
+
+   ExposureCubeSun(double skybin, double costhetabin, double thetabinSun, double thetamax,
+                const std::vector< std::pair<double, double> > & timeCuts,
+                const std::vector< std::pair<double, double> > & gtis,
+                double zenmax=180.);
 
    ExposureCubeSun(const ExposureCubeSun & other);
 
@@ -56,7 +64,7 @@ public:
    void readExposureCubeSun(std::string filename);
 
    double livetime(const astro::SkyDir & dir, double costheta,
-                   double costhetasun, double phi=1) const;
+                   double thetasun, double phi=1) const;
 
    void setEfficiencyFactor(const irfInterface::IEfficiencyFactor * eff) {
       if (eff) {
@@ -66,35 +74,35 @@ public:
 
 #ifndef SWIG
    template<class T>
-   double value(const astro::SkyDir & dir, double costhetasun, const T & aeff,
+   double value(const astro::SkyDir & dir, double thetasun, const T & aeff,
                 bool weighted_lt=false) const {
       if (m_hasPhiDependence) {
          AeffWrapper<T> myAeff(aeff);
          if (weighted_lt && m_weightedExposure) {
-            return m_weightedExposure->integral(dir, costhetasun, myAeff);
+            return m_weightedExposure->integral(dir, thetasun, myAeff);
          }
-         return m_exposure->integral(dir, costhetasun, myAeff);
+         return m_exposure->integral(dir, thetasun, myAeff);
       }
       if (weighted_lt && m_weightedExposure) {
-         return m_weightedExposure->operator()(dir, costhetasun, aeff);
+         return m_weightedExposure->operator()(dir, thetasun, aeff);
       }
-      return (*m_exposure)(dir, costhetasun, aeff);
+      return (*m_exposure)(dir, thetasun, aeff);
    }
 
    // Compute the exposure with trigger rate- and energy-dependent
    // efficiency corrections.
    template<class T>
-   double value(const astro::SkyDir & dir, double costhetasun, const T & aeff, 
+   double value(const astro::SkyDir & dir, double thetasun, const T & aeff, 
                 double energy) const {
       double factor1(1), factor2(0);
       if (m_efficiencyFactor) {
          m_efficiencyFactor->getLivetimeFactors(energy, factor1, factor2);
       }
-      double value1(value(dir, costhetasun, aeff));
+      double value1(value(dir, thetasun, aeff));
       double value2(0);
       double exposure(factor1*value1);
       if (factor2 != 0) {
-         value2 = value(dir, costhetasun, aeff, true);
+         value2 = value(dir, thetasun, aeff, true);
          exposure += factor2*value2;
       }
       if (exposure < 0) {
@@ -121,11 +129,13 @@ public:
 	 }
 
 	 //Returns the boundaries
-	 void costhetaBinsSun(std::vector<double> &muSunbounds) const;
+	 void thetaBinsSun(std::vector<double> &thSunbounds) const;
 
-	 size_t ncosthetaBinsSun() const {
-		  return CosineBinner2D::nbins2();
+	 size_t nthetaBinsSun() const {
+		  return CosineBinner2D::nthbins();
 	 }
+
+	 ExposureCubeSun & operator += (const ExposureCubeSun &other);
 
    class Aeff {
    public:
@@ -139,6 +149,41 @@ public:
       double m_energy;
       const Observation & m_observation;
    };
+
+   void load(const tip::Table * tuple, bool verbose=true);
+
+   tip::Index_t numIntervals() const {
+      return m_numIntervals;
+   }
+
+   /// @brief Normally one would re-implement the
+   /// map_tools::Exposure::write(...) member function from the base
+   /// class, but it is not virtual, so we add this method instead to
+   /// avoid possible confusion if these classes are used
+   /// polymorphically.
+   void writeFile(const std::string & outfile) const;
+
+   /// @param start MET start time of interval (seconds)
+   /// @param stop MET stop time of interval (seconds)
+   /// @param timeCuts Time range cuts
+   /// @param gtis Good Time Intervals
+   /// @param fraction Fraction of the interval to use in exposure
+   ///        calculation.  This is a return value.
+   static bool 
+   acceptInterval(double start, double stop, 
+                  const std::vector< std::pair<double, double> > & timeCuts,
+                  const std::vector< std::pair<double, double> > & gtis,
+                  double & fraction);
+
+   static double overlap(const std::pair<double, double> & interval1,
+                         const std::pair<double, double> & interval2);
+
+protected:
+
+   ExposureCubeSun & operator=(const ExposureCubeSun &) {
+      return *this;
+   }
+
 
 private:
 
@@ -159,6 +204,10 @@ private:
    };
 #endif
 
+   double m_costhetabin;
+   double m_thetabin;
+   double m_thetamax;
+
    ExposureSun * m_exposure;
    ExposureSun * m_weightedExposure;
 
@@ -169,6 +218,36 @@ private:
    std::string m_fileName;
 
    bool m_hasPhiDependence;
+
+   const std::vector< std::pair<double, double> > & m_timeCuts;
+   const std::vector< std::pair<double, double> > & m_gtis;
+
+	 /// Start of mission in Julian date
+		static const double s_mjd_missionStart;
+		astro::SolarSystem m_solar_dir;
+   /// Minimum time to be considered given GTIs (MET s)
+   double m_tmin;
+
+   /// Maximum time to be considered given GTIs (MET s)
+   double m_tmax;
+
+   /// Number of FT2 intervals that have been loaded.
+   tip::Index_t m_numIntervals;
+
+   static bool overlaps(const std::pair<double, double> & interval1,
+                        std::pair<double, double> & interval2);
+
+   void writeFilename(const std::string & outfile) const;
+
+   void writeBins(const std::string & outfile) const;
+
+   void setCosbinsFieldFormat(const std::string & outfile,
+                              const ExposureSun * self,
+                              const std::string & extname) const;
+
+   void fitsReportError(int status, const std::string & routine) const;
+
+   void computeBins(std::vector<double> & mubounds, std::vector<double> &thSunbounds) const;
 
    bool phiDependence(const std::string & filename) const;
 

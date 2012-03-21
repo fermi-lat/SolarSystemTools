@@ -2,7 +2,7 @@
 #
 # Authors: Gudlaugur Johannesson <gudlaugu@glast2.stanford.edu>
 # Version: SolarSystemTools-00-01-00
-# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SConscript,v 1.3 2012/02/15 03:03:49 gudlaugu Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SConscript,v 1.4 2012/02/15 03:05:26 gudlaugu Exp $
 Import('baseEnv')
 Import('listFiles')
 progEnv = baseEnv.Clone()
@@ -22,6 +22,9 @@ progEnv.Tool('SolarSystemToolsLib')
 gtltcubesun = progEnv.Program('gtltcubesun', 
                               listFiles(['src/makeSolarExposureCube/*.cxx']))
 
+gtltsumsun = progEnv.Program('gtltsumsun', 
+                              listFiles(['src/gtltsumsun/*.cxx']))
+
 gtexpcubesun = progEnv.Program('gtexpcubesun',
                               listFiles(['src/gtexpcubesun/*.cxx']))
 
@@ -36,7 +39,8 @@ progEnv.Tool('registerTargets', package = 'SolarSystemTools',
              binaryCxts = [[gtltcubesun, progEnv], 
                            [gtexpcubesun, progEnv],
                            [gtexphpsun, progEnv],
-                           [gtsuntemp, progEnv]],
+                           [gtsuntemp, progEnv],
+                           [gtltsumsun, progEnv]],
 #             testAppCxts = [[test_SolarSystemToolsBin, testEnv]],
              includes = listFiles(['SolarSystemTools/*.h']),
              pfiles = listFiles(['pfiles/*.par']),
