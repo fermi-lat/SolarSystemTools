@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Wed Mar 21 15:50:18 PDT 2012
+SolarSystemTools
+
+Modified Files:
+	SConscript 
+Log Message:
+Changed binning from sqrt(cosine thetasun) to sqrt(thetatsun).  Reduced the number of classes by one, merged LikeExposureSun and ExposureCubeSun.
+    *
+------------------------------------------------------------
 User: gudlaugu  Wed Feb 29 03:28:22 PST 2012
 SolarSystemTools/src
 
