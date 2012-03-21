@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: gudlaugu  Wed Mar 21 15:50:21 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	BinnedExposureSun.cxx CosineBinner2D.cxx ExposureCubeSun.cxx 
+	ExposureSun.cxx HealpixExposureSun.cxx LikeExposureSun.cxx 
+	SolarTemplate.cxx 
+Log Message:
+Changed binning from sqrt(cosine thetasun) to sqrt(thetatsun).  Reduced the number of classes by one, merged LikeExposureSun and ExposureCubeSun.
+    *
+------------------------------------------------------------
 User: gudlaugu  Wed Mar 21 15:50:20 PDT 2012
 SolarSystemTools/pfiles
 
