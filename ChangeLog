@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: gudlaugu  Fri Mar 23 07:10:13 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	CosineBinner2D.cxx ExposureCubeSun.cxx ExposureSun.cxx 
+	HealpixExposureSun.cxx LikeExposureSun.cxx 
+Log Message:
+Switched back to costhetasun binning with an adjustable power law binning algorithm (possible to switch between cubed and squared and evertthing inbetween).  Changed from map to vector based storage for HealpixExposure and improved the algorithm for a speed up.
+    *
+------------------------------------------------------------
 User: gudlaugu  Fri Mar 23 07:10:12 PDT 2012
 SolarSystemTools/pfiles
 
