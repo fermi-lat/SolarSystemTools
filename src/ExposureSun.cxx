@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.4 2012/02/29 11:28:22 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.5 2012/03/21 22:50:20 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -46,10 +46,12 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
     hdr["NBRBINS"].get(nbrbins);
     double cosmin;
     hdr["COSMIN"].get(cosmin);
-    int nthbins;
-    hdr["NTHBINS"].get(nthbins);
-    double thmax;
-    hdr["THMAX"].get(thmax);
+    int nbrbins2;
+    hdr["NBRBINS2"].get(nbrbins2);
+    double cosmin2;
+    hdr["COSMIN2"].get(cosmin2);
+		double power2;
+		hdr["POWER2"].get(power2);
 
     int nphibins(0);
     try{
@@ -68,10 +70,11 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
     astro::SkyDir::CoordSystem coordsys = (check == "GAL")?
         astro::SkyDir::GALACTIC: astro::SkyDir::EQUATORIAL;
 
-    CosineBinner2D::setBinning(cosmin, thmax*M_PI/180., nbrbins, nthbins, thetabin);
+    CosineBinner2D::setBinning(cosmin, cosmin2, nbrbins, nbrbins2, thetabin);
     if( nphibins>0){
         CosineBinner2D::setPhiBins(nphibins);
     }
+		CosineBinner2D::setPower2(power2);
     data().setHealpix(Healpix(nside, ord, coordsys));
 
     tip::Table::ConstIterator itor = table.begin();
@@ -105,7 +108,7 @@ inline int side_from_degrees(double pixelsize){
     return n; 
 } 
 
-ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double thbinsize, double thmax, double zcut, bool weighted)
+ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double thbinsize, double thmax, double powerbin, double zcut, bool weighted)
 : SkyExposure2D(
     SkyBinner2D(Healpix(
       side_from_degrees(pixelsize),  // nside
@@ -116,18 +119,13 @@ ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double thbinsize, 
 , m_weighted(weighted)
 , m_solar_dir(astro::SolarSystem::SUN)
 {
-	double thmaxrad = thmax*M_PI/180.;
+	const double cosmin2 = cos(thmax*M_PI/180.);
     unsigned int cosbins = static_cast<unsigned int>(1./cosbinsize);
-    unsigned int thbins = static_cast<unsigned int>(sqrt(thmax/thbinsize));
-    if( cosbins != CosineBinner2D::nbins() || thbins != CosineBinner2D::nthbins() ) { 
-        unsigned int allbins(cosbins*thbins);
-        if( CosineBinner2D::nphibins() > 0 ){
-            // add size for extra phi bins.
-            allbins += allbins * CosineBinner2D::nphibins();
-        }
-        
-        CosineBinner2D::setBinning(0, thmaxrad, cosbins, thbins);
+    unsigned int cosbins2 = static_cast<unsigned int>( pow( (1-cosmin2)/(1-cos(thbinsize*M_PI/180.)) , 1./3.) );
+    if( cosbins != CosineBinner2D::nbins() || cosbins2 != CosineBinner2D::nbins2() ) { 
+        CosineBinner2D::setBinning(0, cosmin2, cosbins, cosbins2);
     }
+		CosineBinner2D::setPower2(powerbin);
     create_cache();
 }
 
@@ -141,6 +139,10 @@ void ExposureSun::create_cache()
         Simple3Vector pixdir(data().dir(is)());
         m_dir_cache.push_back(std::make_pair(&*is, pixdir));
     }
+}
+
+bool ExposureSun::hasCosthetasun(const astro::SkyDir & dir, double costhetasun) const {
+	return data()[dir].hasCostheta2(costhetasun);
 }
 
 /** @class Filler
@@ -189,9 +191,9 @@ public:
             if( m_use_phi) {
                 const CLHEP::Hep3Vector instrument_dir( pixeldir.transform(m_rot) );
                 const double costheta(instrument_dir.z()), phi(instrument_dir.phi());
-                x.first->fill( costheta, acos(pixeldir.dot(m_dirsun)), phi , m_deltat);
+                x.first->fill( costheta, pixeldir.dot(m_dirsun), phi , m_deltat);
             } else {
-               x.first->fill( pixeldir.dot(m_dirz), acos(pixeldir.dot(m_dirsun)), m_deltat);
+               x.first->fill( pixeldir.dot(m_dirz), pixeldir.dot(m_dirsun), m_deltat);
             }
 
             m_total += m_deltat;
@@ -297,11 +299,12 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
     hdr["FIRSTPIX"].set(0); 
     hdr["LASTPIX"].set(data().size() - 1); 
     hdr["THETABIN"].set(CosineBinner2D::thetaBinning());
-    hdr["NBINS"].set(CosineBinner2D::nbins()*CosineBinner2D::nthbins()*(CosineBinner2D::nphibins()+1));
+    hdr["NBINS"].set(CosineBinner2D::nbins()*CosineBinner2D::nbins2()*(CosineBinner2D::nphibins()+1));
     hdr["NBRBINS"].set(CosineBinner2D::nbins());
     hdr["COSMIN"].set(CosineBinner2D::cosmin());
-    hdr["NTHBINS"].set(CosineBinner2D::nthbins());
-    hdr["THMAX"].set(CosineBinner2D::thmax()*180/M_PI);
+    hdr["NBRBINS2"].set(CosineBinner2D::nbins2());
+    hdr["COSMIN2"].set(CosineBinner2D::cosmin2());
+		hdr["POWER2"].set(CosineBinner2D::power2());
     hdr["PHIBINS"].set(CosineBinner2D::nphibins());
 
     // need to do this to ensure file is closed when pointer goes out of scope

@@ -4,7 +4,7 @@
  * integrations
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/HealpixExposureSun.h,v 1.1 2012/02/15 03:03:50 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/HealpixExposureSun.h,v 1.2 2012/03/21 22:50:19 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_HealpixExposureSun_h
@@ -107,7 +107,27 @@ private:
 
    const Observation * m_observation;
 
-   typedef std::map<size_t,float> pixel;
+	 // The array is sparse in thetasun only
+	 class pixel : public std::vector<float> {
+		 public:
+			 float & value (size_t index);
+			 float value (size_t index) const;
+			 
+			 std::vector<size_t> indices() const;
+			 std::vector<size_t> sparseIndices() const;
+			 
+			 static void setStride(size_t stride);
+
+		 private:
+			 // The data is stored sparse in first index i
+			 // index = i*stride + j
+	     typedef std::vector< std::pair<size_t, size_t> > pixelIndex;
+			 pixelIndex m_ifaketoreal, m_irealtofake;
+			 
+			 static size_t m_stride;
+
+		   static bool less_than(const std::pair<size_t,size_t> &a, const std::pair<size_t,size_t> &b) { return a.first < b.first; }
+	 };
 	 healpix::HealpixArray<pixel> m_exposureMap;
 
    std::vector<double> m_energies;

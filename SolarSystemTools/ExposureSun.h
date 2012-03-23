@@ -3,7 +3,7 @@
 
     @author G. Johannesson
 
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.2 2012/02/29 11:28:21 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.3 2012/03/21 22:50:19 gudlaugu Exp $
 */
 #ifndef SolarSystemTools_EXPOSURE_SUN_H
 #define SolarSystemTools_EXPOSURE_SUN_H
@@ -30,7 +30,7 @@ namespace SolarSystemTools {
 
 It is a pixelated using Healpix binning, and the CosineBinner2D class
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.2 2012/02/29 11:28:21 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.3 2012/03/21 22:50:19 gudlaugu Exp $
 */
 
 class ExposureSun : public SkyExposure2D {
@@ -41,8 +41,9 @@ public:
     //! @param weighted [false] set true to make a weighted table
     ExposureSun(double pixelsize=1., 
 				double cosbinsize=1./CosineBinner2D::nbins(), 
-			     double thbinsizesun=pow(180./CosineBinner2D::nthbins(),2), 
+			     double thbinsizesun=pow(180./CosineBinner2D::nbins2(),2), 
 			     double thmaxsun=180.,
+					 double powerbin=2.5,
         double zcut=-1.0,
         bool   weighted=false
         );
@@ -86,6 +87,8 @@ public:
                     bool verbose=true);
 
     double lost()const{return m_lost;}
+
+		bool hasCosthetasun(const astro::SkyDir & dir, double costhetasun) const;
 
     /** @brief  allow horizon cut, possible if FOV includes horizon
         @param dirz direction of z-axis of instrument

@@ -3,7 +3,7 @@
  * @brief Exposure time hypercube.
  * @author G. Johannesson <gudlaugu@glast2.stanford.edu>
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.3 2012/02/15 03:03:50 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.4 2012/03/21 22:50:19 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_ExposureCubeSun_h
@@ -33,7 +33,7 @@ namespace SolarSystemTools {
  *
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.3 2012/02/15 03:03:50 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.4 2012/03/21 22:50:19 gudlaugu Exp $
  */
 
 class ExposureCubeSun {
@@ -48,7 +48,7 @@ public:
        m_gtis(std::vector<std::pair<double, double> >(0))
 	{}
 
-   ExposureCubeSun(double skybin, double costhetabin, double thetabinSun, double thetamax,
+   ExposureCubeSun(double skybin, double costhetabin, double thetabinSun, double thetamax, double powerbinsun,
                 const std::vector< std::pair<double, double> > & timeCuts,
                 const std::vector< std::pair<double, double> > & gtis,
                 double zenmax=180.);
@@ -74,35 +74,35 @@ public:
 
 #ifndef SWIG
    template<class T>
-   double value(const astro::SkyDir & dir, double thetasun, const T & aeff,
+   double value(const astro::SkyDir & dir, double costhetasun, const T & aeff,
                 bool weighted_lt=false) const {
       if (m_hasPhiDependence) {
          AeffWrapper<T> myAeff(aeff);
          if (weighted_lt && m_weightedExposure) {
-            return m_weightedExposure->integral(dir, thetasun, myAeff);
+            return m_weightedExposure->integral(dir, costhetasun, myAeff);
          }
-         return m_exposure->integral(dir, thetasun, myAeff);
+         return m_exposure->integral(dir, costhetasun, myAeff);
       }
       if (weighted_lt && m_weightedExposure) {
-         return m_weightedExposure->operator()(dir, thetasun, aeff);
+         return m_weightedExposure->operator()(dir, costhetasun, aeff);
       }
-      return (*m_exposure)(dir, thetasun, aeff);
+      return (*m_exposure)(dir, costhetasun, aeff);
    }
 
    // Compute the exposure with trigger rate- and energy-dependent
    // efficiency corrections.
    template<class T>
-   double value(const astro::SkyDir & dir, double thetasun, const T & aeff, 
+   double value(const astro::SkyDir & dir, double costhetasun, const T & aeff, 
                 double energy) const {
       double factor1(1), factor2(0);
       if (m_efficiencyFactor) {
          m_efficiencyFactor->getLivetimeFactors(energy, factor1, factor2);
       }
-      double value1(value(dir, thetasun, aeff));
+      double value1(value(dir, costhetasun, aeff));
       double value2(0);
       double exposure(factor1*value1);
       if (factor2 != 0) {
-         value2 = value(dir, thetasun, aeff, true);
+         value2 = value(dir, costhetasun, aeff, true);
          exposure += factor2*value2;
       }
       if (exposure < 0) {
@@ -124,6 +124,10 @@ public:
       return m_hasPhiDependence;
    }
 
+	 bool hasCosthetasun(const astro::SkyDir & dir, double costhetasun) const {
+		 return m_exposure->hasCosthetasun(dir, costhetasun);
+	 }
+
 	 healpix::Healpix getHealpix() const {
 		 return m_exposure->data().healpix();
 	 }
@@ -132,7 +136,7 @@ public:
 	 void thetaBinsSun(std::vector<double> &thSunbounds) const;
 
 	 size_t nthetaBinsSun() const {
-		  return CosineBinner2D::nthbins();
+		  return CosineBinner2D::nbins2();
 	 }
 
 	 ExposureCubeSun & operator += (const ExposureCubeSun &other);

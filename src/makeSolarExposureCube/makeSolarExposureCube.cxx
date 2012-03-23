@@ -3,7 +3,7 @@
  * @brief Create an Exposure hypercube including distance from solar center
  * @author G. Johannesson
  *
- *  $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.2 2012/03/21 22:50:21 gudlaugu Exp $
  */
 
 #include <cstdlib>
@@ -68,7 +68,7 @@ namespace {
  *
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.2 2012/03/21 22:50:21 gudlaugu Exp $
  */
 class ExposureCubeSun : public st_app::StApp {
 public:
@@ -237,6 +237,7 @@ void ExposureCubeSun::createDataCube() {
                                              m_pars["dcostheta"],
                                              m_pars["dthetasun"],
                                              m_pars["thetasunmax"],
+																						 m_pars["powerbinsun"],
                                              timeCuts, gtis, zmax);
    std::string scFile = m_pars["scfile"];
    st_facilities::Util::file_ok(scFile);

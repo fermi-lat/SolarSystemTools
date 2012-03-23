@@ -3,7 +3,7 @@
  * @brief Implementation for ExposureCubeSun wrapper class of SolarSystemTools::Exposure
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.2 2012/02/13 22:24:37 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.3 2012/03/21 22:50:20 gudlaugu Exp $
  */
 
 #include <iomanip>
@@ -66,7 +66,7 @@ void ExposureCubeSun::readExposureCubeSun(std::string filename) {
 }
 
 ExposureCubeSun::
-ExposureCubeSun(double skybin, double costhetabin, double thetabin, double thetamax,
+ExposureCubeSun(double skybin, double costhetabin, double thetabin, double thetamax, double powerbinsun,
              const std::vector< std::pair<double, double> > & timeCuts,
              const std::vector< std::pair<double, double> > & gtis,
              double zenmax)
@@ -76,9 +76,9 @@ ExposureCubeSun(double skybin, double costhetabin, double thetabin, double theta
      m_costhetabin(costhetabin), m_timeCuts(timeCuts), m_gtis(gtis),
      m_thetabin(thetabin), m_thetamax(thetamax), m_numIntervals(0), 
 		 m_solar_dir(astro::SolarSystem::SUN),
-     m_exposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax,
+     m_exposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax, powerbinsun,
                                                 std::cos(zenmax*M_PI/180.))),
-     m_weightedExposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax,
+     m_weightedExposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax, powerbinsun,
                                                 std::cos(zenmax*M_PI/180.)))
      {
    if (!gtis.empty()) {
@@ -233,14 +233,14 @@ void ExposureCubeSun::writeBins(const std::string & outfile) const {
    delete table;
 
    table = fileSvc.editTable(outfile, "THETASUNBOUNDS");
-   table->setNumRecords(CosineBinner2D::nthbins());
+   table->setNumRecords(CosineBinner2D::nbins2());
 
    tip::Table::Iterator itSun(table->begin());
    tip::TableRecord & rowSun(*itSun);
    
    for (size_t i(0); i < thbounds.size() -1; i++, ++itSun) {
-      rowSun["THETA_MIN"].set(thbounds.at(i+1));
-      rowSun["THETA_MAX"].set(thbounds.at(i));
+      rowSun["THETA_MIN"].set(thbounds.at(i)*180/M_PI);
+      rowSun["THETA_MAX"].set(thbounds.at(i+1)*180/M_PI);
    }
    delete table;
 }
@@ -256,7 +256,7 @@ void ExposureCubeSun::setCosbinsFieldFormat(const std::string & outfile,
    fitsReportError(status, "ExposureCubeSun::setCosbinsFieldFormat");
    
    int colnum(1); // by assumption
-   fits_modify_vector_len(fptr, colnum, CosineBinner2D::nbins()*CosineBinner2D::nthbins()*(1+CosineBinner2D::nphibins()), &status);
+   fits_modify_vector_len(fptr, colnum, CosineBinner2D::nbins()*CosineBinner2D::nbins2()*(1+CosineBinner2D::nphibins()), &status);
    fitsReportError(status, "ExposureCubeSun::setCosbinsFieldFormat");
 
    fits_close_file(fptr, &status);
@@ -359,7 +359,7 @@ fitsReportError(int status, const std::string & routine) const {
 void ExposureCubeSun::
 computeBins(std::vector<double> & mubounds, std::vector<double> &thbounds) const {
 	CosineBinner2D::cosThetaBins(mubounds);
-	CosineBinner2D::thetaBins(thbounds);
+	thetaBinsSun(thbounds);
 }
 
 double ExposureCubeSun::livetime(const astro::SkyDir & dir,
@@ -375,7 +375,10 @@ ExposureCubeSun& ExposureCubeSun::operator += (const ExposureCubeSun &other) {
 
 void ExposureCubeSun::
 thetaBinsSun(std::vector<double> &thSunbounds) const {
-	CosineBinner2D::thetaBins(thSunbounds);
+	CosineBinner2D::cosTheta2Bins(thSunbounds);
+	for (size_t i = 0; i < thSunbounds.size(); ++i) {
+		thSunbounds[i] = acos(thSunbounds[i]);
+	}
 }
 
 bool ExposureCubeSun::phiDependence(const std::string & filename) const {
