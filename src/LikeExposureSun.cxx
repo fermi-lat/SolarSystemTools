@@ -3,7 +3,7 @@
  * @brief Implementation of ExposureSun class for use by the SolarSystemTools.
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/src/LikeExposureSun.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/LikeExposureSun.cxx,v 1.2 2012/03/21 22:50:20 gudlaugu Exp $
  */
 
 #include <algorithm>
@@ -206,7 +206,7 @@ void LikeExposureSun::writeLivetimes(const std::string & outfile,
    healpix::HealpixArray<CosineBinner2D>::const_iterator 
       pixel(self->data().begin());
 
-	 std::vector<double> vtmp(CosineBinner2D::nbins()*CosineBinner2D::nthbins()*(1+CosineBinner2D::nphibins()), 0.0);
+	 std::vector<double> vtmp(CosineBinner2D::nbins()*CosineBinner2D::nbins2()*(1+CosineBinner2D::nphibins()), 0.0);
    for ( ; pixel != self->data().end(); ++pixel, ++it) {
 		 std::fill(vtmp.begin(), vtmp.end(), 0);
 			for (CosineBinner2D::const_iterator it = (*pixel).begin(); it != (*pixel).end(); ++it) {
@@ -226,11 +226,11 @@ void LikeExposureSun::writeLivetimes(const std::string & outfile,
    header["FIRSTPIX"].set(0); 
    header["LASTPIX"].set(self->data().size() - 1); 
    header["THETABIN"].set(CosineBinner2D::thetaBinning());
-   header["NBRBINS"].set(CosineBinner2D::nbins()*CosineBinner2D::nthbins());
+   header["NBRBINS"].set(CosineBinner2D::nbins()*CosineBinner2D::nbins2());
    header["NBRBINS1"].set(CosineBinner2D::nbins());
    header["COSMIN1"].set(CosineBinner2D::cosmin());
-   header["NBRBINS2"].set(CosineBinner2D::nthbins());
-   header["COSMIN2"].set(CosineBinner2D::thmax());
+   header["NBRBINS2"].set(CosineBinner2D::nbins2());
+   header["COSMIN2"].set(CosineBinner2D::cosmin2());
    header["PHIBINS"].set(CosineBinner2D::nphibins());
 
    delete table;
@@ -255,7 +255,7 @@ void LikeExposureSun::writeCosbins(const std::string & outfile) const {
    delete table;
 
    table = fileSvc.editTable(outfile, "CTHETASUNBOUNDS");
-   table->setNumRecords(CosineBinner2D::nthbins());
+   table->setNumRecords(CosineBinner2D::nbins2());
 
    tip::Table::Iterator itSun(table->begin());
    tip::TableRecord & rowSun(*itSun);
@@ -278,7 +278,7 @@ void LikeExposureSun::setCosbinsFieldFormat(const std::string & outfile,
    fitsReportError(status, "LikeExposureSun::setCosbinsFieldFormat");
    
    int colnum(1); // by assumption
-   fits_modify_vector_len(fptr, colnum, CosineBinner2D::nbins()*CosineBinner2D::nthbins()*(1+CosineBinner2D::nphibins()), &status);
+   fits_modify_vector_len(fptr, colnum, CosineBinner2D::nbins()*CosineBinner2D::nbins2()*(1+CosineBinner2D::nphibins()), &status);
    fitsReportError(status, "LikeExposureSun::setCosbinsFieldFormat");
 
    fits_close_file(fptr, &status);
@@ -383,8 +383,8 @@ computeCosbins(std::vector<double> & mubounds, std::vector<double> &muSunbounds)
    bool sqrtbins(CosineBinner2D::thetaBinning() == "SQRT(1-COSTHETA)");
    double cosmin(CosineBinner2D::cosmin());
    size_t nbins(CosineBinner2D::nbins());
-   double cosminSun(CosineBinner2D::thmax());
-   size_t nbinsSun(CosineBinner2D::nthbins());
+   double cosminSun(CosineBinner2D::cosmin2());
+   size_t nbinsSun(CosineBinner2D::nbins2());
    mubounds.clear();
 //   for (int i(nbins); i >= 0; i--) {
    for (size_t i(0); i < nbins+1; i++) {

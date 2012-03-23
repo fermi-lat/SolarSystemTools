@@ -1,10 +1,10 @@
-/**
+/*
  * @file HealpixExposureSun.cxx
  * @brief Integral of effective area over time for the entire sky at
  * various energies.
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/HealpixExposureSun.cxx,v 1.1 2012/02/15 03:03:51 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/HealpixExposureSun.cxx,v 1.2 2012/03/21 22:50:20 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -68,6 +68,8 @@ HealpixExposureSun::HealpixExposureSun(const std::vector<double> & energies,
                                const st_app::AppParGroup * pars) 
    : m_energies(energies), m_observation(&observation),
      m_costhmin(0), m_costhmax(1),m_enforce_boundaries(false)  {
+
+	 pixel::setStride(energies.size());
    if (pars) {
       setMapGeometry(*pars);
       setCosThetaBounds(*pars);
@@ -80,6 +82,34 @@ HealpixExposureSun::HealpixExposureSun(const std::vector<double> & energies,
 HealpixExposureSun::HealpixExposureSun(const std::string & filename) 
    : m_observation(0), m_costhmin(0), m_costhmax(1),
      m_enforce_boundaries(false) {
+
+   std::auto_ptr<const tip::Table>
+      energies(tip::IFileSvc::instance().readTable(filename, "Energies"));
+
+   m_energies.clear();
+   tip::Table::ConstIterator it = energies->begin();
+   tip::ConstTableRecord & row = *it;
+   for ( ; it != energies->end(); ++it) {
+      double value;
+      row["Energy"].get(value);
+      m_energies.push_back(value);
+   }
+
+	 pixel::setStride(m_energies.size());
+
+   std::auto_ptr<const tip::Table>
+      thetasun(tip::IFileSvc::instance().readTable(filename, "thetasun"));
+
+	 m_thetasun.clear();
+	 it = thetasun->begin();
+	 //Need to add the first value separately
+	 double value;
+	 row["Theta_Min"].get(value);
+	 m_thetasun.push_back(value*M_PI/180.);
+   for ( ; it != thetasun->end(); ++it) {
+      row["Theta_Max"].get(value);
+      m_thetasun.push_back(value*M_PI/180.);
+   }
 
     const tip::Table & table=*tip::IFileSvc::instance().readTable(filename, "EXPOSURE");
     const tip::Header& hdr = table.getHeader();
@@ -109,44 +139,18 @@ HealpixExposureSun::HealpixExposureSun(const std::string & filename)
 
     for( ; itor != table.end(); ++haitor, ++itor)
     {
-			  std::vector<double> values;
+			  std::vector<float> values;
 			  std::vector<size_t> index;
         (*itor)["Values"].get(values);
         (*itor)["Index"].get(index);
 				assert( values.size() == index.size() );
 				
 				for (size_t i = 0; i < index.size(); ++i) {
-					(*haitor)[index[i]] = values[i];
+					(*haitor).value(index[i]) = values[i];
 				}
 
     }
     delete &table; 
-
-   std::auto_ptr<const tip::Table>
-      energies(tip::IFileSvc::instance().readTable(filename, "Energies"));
-
-   m_energies.clear();
-   tip::Table::ConstIterator it = energies->begin();
-   tip::ConstTableRecord & row = *it;
-   for ( ; it != energies->end(); ++it) {
-      double value;
-      row["Energy"].get(value);
-      m_energies.push_back(value);
-   }
-
-   std::auto_ptr<const tip::Table>
-      thetasun(tip::IFileSvc::instance().readTable(filename, "thetasun"));
-
-	 m_thetasun.clear();
-	 it = thetasun->begin();
-	 //Need to add the first value separately
-	 double value;
-	 row["Theta_Min"].get(value);
-	 m_thetasun.push_back(value*M_PI/180.);
-   for ( ; it != thetasun->end(); ++it) {
-      row["Theta_Max"].get(value);
-      m_thetasun.push_back(value*M_PI/180.);
-   }
 
 }
 
@@ -159,17 +163,21 @@ double HealpixExposureSun::integrate(double energy, double ra, double dec, const
 	 const pixel & pix = m_exposureMap[dir];
 
 	 double integ(0);
-	 pixel::const_iterator it = pix.lower_bound(k*(m_thetasun.size()-1));
-	 pixel::const_iterator end = pix.upper_bound((k+1)*(m_thetasun.size()-1)-1);
-	 for ( ; it != end; ++it ) {
-		 const size_t cind = (*it).first-k*(m_thetasun.size()-1);
-		 integ += (*it).second * f(cos(0.5*(m_thetasun[cind]+m_thetasun[cind+1])));
+	 std::vector<size_t> ifakes = pix.sparseIndices();
+	 for ( size_t i = 0; i < ifakes.size(); ++i ) {
+		 const float value = pix[i*m_energies.size() + k];
+		 if ( value != 0 )
+		    integ += value * f(cos(0.5*(m_thetasun[ifakes[i]]+m_thetasun[ifakes[i]+1])));
 	 }
 
 	 return integ;
 }
 
 double HealpixExposureSun::operator()(double energy, double ra, double dec, double theta) const {
+
+	// Check for theta out of bounds
+	 if (m_thetasun[m_thetasun.size()-1] < theta) return 0;
+
    std::vector<double>::const_iterator ie = ::findNearest(m_energies, energy);
    unsigned int k = ie - m_energies.begin();
 
@@ -181,15 +189,9 @@ double HealpixExposureSun::operator()(double energy, double ra, double dec, doub
 
 	 const astro::SkyDir dir(ra,dec);
 
-	 const unsigned int indx = l + k*(m_thetasun.size()-1);
+	 const size_t indx = l*m_energies.size() + k;
 
-	 pixel::const_iterator it = m_exposureMap[dir].find(indx);
-
-	 if (it != m_exposureMap[dir].end()) {
-		 return (*it).second;
-	 } else {
-		 return 0;
-	 }
+	 return m_exposureMap[dir].value(indx);
 }
 
 /// return the closest power of 2 for the side parameter
@@ -223,15 +225,15 @@ void HealpixExposureSun::computeMap() {
    st_stream::StreamFormatter formatter("HealpixExposureSun", "computeMap", 2);
    formatter.warn() << "Computing binned exposure map";
 
-   std::vector<double> thetasun(m_thetasun.size()-1);
-   for (int j = 0; j < thetasun.size(); ++j) {
-     thetasun[j] = (m_thetasun[j]+m_thetasun[j+1])/2.;
+   std::vector<double> costhetasun(m_thetasun.size()-1);
+   for (int j = 0; j < costhetasun.size(); ++j) {
+     costhetasun[j] = cos((m_thetasun[j]+m_thetasun[j+1])/2.);
    }
 
 	 //Create a cache for AEff calculations
-	 std::vector<BinnedExposureSun::Aeff*> aeffs;
+	 std::vector<BinnedExposureSun::Aeff*> aeffs(m_energies.size());
 	 for (size_t i = 0; i < m_energies.size(); ++i)
-     aeffs.push_back(new BinnedExposureSun::Aeff(m_energies[i], *m_observation, m_costhmin, m_costhmax));
+     aeffs[i] = new BinnedExposureSun::Aeff(m_energies[i], *m_observation, m_costhmin, m_costhmax);
 
 	 healpix::HealpixArray<pixel>::iterator haitor = m_exposureMap.begin();
 
@@ -244,16 +246,16 @@ void HealpixExposureSun::computeMap() {
          // astro::SkyDir dir(coord.first, coord.second, coordsys);
          astro::SkyDir dir = m_exposureMap.dir(haitor);
                                            
-         for (unsigned int k = 0; k < m_energies.size(); k++) {
-               const BinnedExposureSun::Aeff &aeff = *aeffs[k]; 
-               for (int l = 0; l < thetasun.size(); ++l) {
-									 const double exposure = m_observation->expCubeSun().value(dir, thetasun[l], aeff, m_energies.at(k));
-									 if (exposure != 0) {
-								      const unsigned int indx = l + k*thetasun.size();
-									    m_exposureMap[dir][indx] += exposure;
-									 }
-               }
-         }
+				 for (int l = 0; l < costhetasun.size(); ++l) {
+					 if (m_observation->expCubeSun().hasCosthetasun(dir,costhetasun[l])) {
+						 for (unsigned int k = 0; k < m_energies.size(); k++) {
+							 const BinnedExposureSun::Aeff &aeff = *aeffs[k]; 
+					     const double exposure = m_observation->expCubeSun().value(dir, costhetasun[l], aeff, m_energies.at(k));
+							 const unsigned int indx = l*m_energies.size() + k;
+							 m_exposureMap[dir].value(indx) += exposure;
+						 }
+					 }
+				 }
    }
    formatter.warn() << "!" << std::endl;
 	 for (size_t i = 0; i < m_energies.size(); ++i)
@@ -279,14 +281,8 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
 	 // now just copy
 	 for( ; haitor != m_exposureMap.end(); ++haitor, ++itor)
 	 {
-		 std::vector<double> values((*haitor).size());
-		 std::vector<size_t> index((*haitor).size());
-		 pixel::const_iterator it = (*haitor).begin();
-		 for (size_t i=0; it != (*haitor).end(); ++it, ++i){
-			 index[i] = (*it).first;
-			 values[i] = (*it).second;
-		 }
-		 (*itor)["Values"].set(values);
+		 std::vector<size_t> index = (*haitor).indices();
+		 (*itor)["Values"].set(*haitor);
 		 (*itor)["Index"].set(index);
 	 }
 
@@ -351,6 +347,59 @@ void HealpixExposureSun::setCosThetaBounds(const st_app::AppParGroup & pars) {
    if (thmax < 180.) {
       m_costhmin = std::cos(thmax*M_PI/180.);
    }
+}
+
+size_t HealpixExposureSun::pixel::m_stride(1);
+
+void HealpixExposureSun::pixel::setStride(size_t stride) {m_stride = stride;}
+
+float & HealpixExposureSun::pixel::value(size_t i) {
+	const size_t ifake = i / m_stride;
+	pixelIndex::iterator it = std::lower_bound(m_ifaketoreal.begin(), m_ifaketoreal.end(), std::pair<size_t,size_t>(ifake,0), less_than);
+
+	//Add the bin if needed
+	size_t ireal(0);
+	if ( it == m_ifaketoreal.end() || it->first != ifake ) {
+		ireal = m_ifaketoreal.size();
+		m_ifaketoreal.insert(it, std::pair<size_t,size_t>(ifake,ireal));
+		m_irealtofake.insert(m_irealtofake.end(), std::pair<size_t, size_t>(ireal,ifake));
+
+		//Resize the storage
+		resize(size()+m_stride, 0.0);
+	} else {
+		ireal = it->second;
+	}
+	return at(i + (ireal - ifake)*m_stride);
+}
+
+float HealpixExposureSun::pixel::value(size_t i) const {
+	const size_t ifake = i / m_stride;
+	pixelIndex::const_iterator it = std::lower_bound(m_ifaketoreal.begin(), m_ifaketoreal.end(), std::pair<size_t,size_t>(ifake,0), less_than);
+
+	//Return 0 if bin not found
+	if ( it == m_ifaketoreal.end() || it->first != ifake )  return 0;
+
+  const size_t ireal = it->second;
+	return at(i + (ireal - ifake)*m_stride);
+}
+
+std::vector<size_t> HealpixExposureSun::pixel::indices() const {
+	std::vector<size_t> indices(size());
+	for (size_t i = 0; i < m_irealtofake.size(); ++i) {
+		const size_t irealstride = m_irealtofake[i].second*m_stride;
+		for (size_t j = 0; j < m_stride; ++j) {
+			indices[i*m_stride+j] = irealstride + j;
+		}
+	}
+	return indices;
+}
+
+std::vector<size_t> HealpixExposureSun::pixel::sparseIndices() const {
+	std::vector<size_t> indices(m_irealtofake.size());
+	for (size_t i = 0; i < m_irealtofake.size(); ++i) {
+		indices[i] = m_irealtofake[i].second;
+	}
+	return indices;
 }
 
 } // namespace SolarSystemTools
