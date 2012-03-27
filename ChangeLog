@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: gudlaugu  Tue Mar 27 15:39:32 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	CosineBinner2D.cxx ExposureCubeSun.cxx ExposureSun.cxx 
+	HealpixExposureSun.cxx 
+Log Message:
+Some optimization for the solar system tools, especially with regards to reading and writing ltcubes
+    *
+------------------------------------------------------------
 User: gudlaugu  Tue Mar 27 15:39:31 PDT 2012
 SolarSystemTools/SolarSystemTools
 
