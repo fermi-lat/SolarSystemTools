@@ -3,7 +3,7 @@
 
 @author G. Johannesson
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.4 2012/02/29 11:28:22 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.6 2012/03/23 14:10:12 gudlaugu Exp $
 */
 
 
@@ -12,6 +12,7 @@ $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 
 #include <cmath>
 #include <stdexcept>
 #include <iostream>
+#include <cassert>
 
 namespace{
     const double pi4( M_PI/4.0), pi2(M_PI/2.);
@@ -103,6 +104,18 @@ CosineBinner2D::CosineBinner2D()
     //resize(s_phibins==0? s_nbins*s_nbins2: s_nbins*s_nbins2*(1+s_phibins) );
 }
 
+std::vector<size_t> CosineBinner2D::indices() const {
+	std::vector<size_t> out(m_itoicostheta2.size()*s_nbins*(s_phibins+1));
+
+	for (size_t i = 0; i < m_itoicostheta2.size(); ++i) {
+		const size_t iadd = m_itoicostheta2[i].second * s_nbins*(s_phibins+1);
+		for (size_t j = 0; j < s_nbins*(s_phibins+1); ++j) {
+			out[i*s_nbins*(s_phibins+1)+j] = iadd+j;
+		}
+	}
+	return out;
+}
+
 std::vector<std::pair<size_t,size_t> >::iterator CosineBinner2D::icostheta2toi(size_t icostheta2){
 	return std::lower_bound(m_icostheta2toi.begin(), m_icostheta2toi.end(), std::pair<size_t,size_t>(icostheta2,size_t(0)), less_than);
 }
@@ -133,49 +146,31 @@ void CosineBinner2D::fill(double costheta, double costheta2, double phi, double 
 double& CosineBinner2D::operator()(double costheta, double costheta2, double phi)
 {
 	const size_t i = index(costheta, costheta2, phi);
-	(*this)[i];
+	value(i);
 }
 
 double CosineBinner2D::operator()(double costheta, double costheta2, double phi)const
 {
 	const size_t i = index(costheta, costheta2, phi);
-	(*this)[i];
+	value(i);
 }
 
-double & CosineBinner2D::operator[] (size_t i) {
+double & CosineBinner2D::value (size_t i) {
    const size_t icostheta2 = i / ( s_nbins*(s_phibins+1) );
-   std::vector<std::pair<size_t,size_t> >::iterator it2 = icostheta2toi(icostheta2);
 
-   //Add the bin if needed
-   size_t i2(0);
-   if ( it2 == m_icostheta2toi.end() || it2->first != icostheta2 ) {
-      //Insert the mapping between indexes
-      i2 = m_icostheta2toi.size();
-      m_icostheta2toi.insert(it2, std::pair<size_t,size_t>(icostheta2,i2));
-      m_itoicostheta2.insert(m_itoicostheta2.end(), std::pair<size_t,size_t>(i2,icostheta2));
+	 const size_t i2 = findI2orAdd(icostheta2);
 
-      //Resize the storage, ~5% at a time
-			const size_t alloc((s_nbins2)/20+1);
-      if (i2 % alloc == 0){
-         reserve( std::min( size()+alloc*s_nbins*(s_phibins+1), s_nbins*(s_nbins2)*(s_phibins+1) ) );
-      }
-      resize(size()+s_nbins*(s_phibins+1), 0.0);
-   } else {
-      i2 = it2->second;
-   }
-   return std::vector<double>::operator[](i + (i2 - icostheta2)*s_nbins*(s_phibins+1));
-   //return at(i + (i2 - icostheta2)*s_nbins*(s_phibins+1));
+   return (*this)[i + (i2 - icostheta2)*s_nbins*(s_phibins+1)];
 }
 
-double CosineBinner2D::operator[] (size_t i) const{
+double CosineBinner2D::value (size_t i) const{
    const size_t icostheta2 = i / ( s_nbins*(s_phibins+1) );
    std::vector<std::pair<size_t,size_t> >::const_iterator it = icostheta2toi(icostheta2);
 
    //Return 0 if not found
    if ( it == m_icostheta2toi.end() || it->first != icostheta2 ) return 0;
 
-   return std::vector<double>::operator[](i + (it->second - icostheta2)*s_nbins*(s_phibins+1));
-   //return at(i + (it->second - icostheta2)*s_nbins*(s_phibins+1));
+   return (*this)[i + (it->second - icostheta2)*s_nbins*(s_phibins+1)];
 }
 
 bool CosineBinner2D::hasCostheta2 ( double costheta ) const {
@@ -197,16 +192,70 @@ CosineBinner2D& CosineBinner2D::operator += (const CosineBinner2D &other) {
 	std::vector<std::pair<size_t,size_t> >::const_iterator it = other.m_itoicostheta2.begin();
 	for ( ; it != other.m_itoicostheta2.end(); ++it) {
 		const size_t icostheta2 = it->second;
-		const size_t iadd = icostheta2*s_nbins*(s_phibins+1);
+
+		const size_t i2 = findI2orAdd(icostheta2);
+
+		//Find the starting indices and do the addition
+		const size_t iadd = i2*s_nbins*(s_phibins+1);
 		const size_t otheradd = it->first*s_nbins*(s_phibins+1);
 		for (size_t i = 0; i < s_nbins*(s_phibins+1); ++i) {
-			(*this)[iadd+i] += other.at(otheradd+i);
+			(*this)[iadd+i] += other[otheradd+i];
 		}
 	}
 
 	return *this;
 	
 }
+
+void CosineBinner2D::setValues(const std::vector<size_t> &indices, const std::vector<double> & values) {
+
+	assert(indices.size() == values.size());
+	if (indices.size() == 0) return;
+
+	//Loop over the indices and only calculate new i2 when needed
+	size_t icostheta2( indices[0]/(s_nbins*(s_phibins+1)) + 1);
+	size_t i2(0);
+	for (size_t i = 0; i < indices.size(); ++i) {
+		const size_t newicostheta2 = indices[i]/(s_nbins*(s_phibins+1));
+		if ( icostheta2 != newicostheta2 ) {
+			icostheta2 = newicostheta2;
+			i2 = findI2orAdd(icostheta2);
+		}
+		(*this)[indices[i] + (i2 - icostheta2)*s_nbins*(s_phibins+1)] = values[i];
+	}
+
+}
+
+size_t CosineBinner2D::findI2orAdd(size_t icostheta2) {
+		//Find or add icostheta2 to the binner
+		std::vector<std::pair<size_t,size_t> >::iterator it2 = icostheta2toi(icostheta2);
+
+		//Add the bin if needed
+		size_t i2(0);
+	
+		if ( it2 == m_icostheta2toi.end() || it2->first != icostheta2 ) {
+			
+			//Insert the mapping between indexes
+			i2 = m_icostheta2toi.size();
+			m_icostheta2toi.insert(it2, std::pair<size_t,size_t>(icostheta2,i2));
+			m_itoicostheta2.insert(m_itoicostheta2.end(), std::pair<size_t,size_t>(i2,icostheta2));
+
+			//Resize the storage, ~5% at a time
+			const size_t alloc((s_nbins2)/20+1);
+			if (i2 % alloc == 0){
+				reserve( std::min( size()+alloc*s_nbins*(s_phibins+1), s_nbins*(s_nbins2)*(s_phibins+1) ) );
+			}
+			resize(size()+s_nbins*(s_phibins+1), 0.0);
+
+		} else {
+			
+			i2 = it2->second;
+		
+		}
+
+		return i2;
+}
+
 
 size_t CosineBinner2D::index(const CosineBinner2D::const_iterator &i) const
 {

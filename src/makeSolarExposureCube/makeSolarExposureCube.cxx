@@ -3,7 +3,7 @@
  * @brief Create an Exposure hypercube including distance from solar center
  * @author G. Johannesson
  *
- *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.2 2012/03/21 22:50:21 gudlaugu Exp $
+ *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.3 2012/03/23 14:10:13 gudlaugu Exp $
  */
 
 #include <cstdlib>
@@ -68,7 +68,7 @@ namespace {
  *
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.2 2012/03/21 22:50:21 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.3 2012/03/23 14:10:13 gudlaugu Exp $
  */
 class ExposureCubeSun : public st_app::StApp {
 public:
@@ -131,15 +131,11 @@ void ExposureCubeSun::run() {
       }
    }
    createDataCube();
-   m_exposure->writeFile(output_file);
-   writeTableKeywords(output_file, "EXPOSURESUN");
-   writeTableKeywords(output_file, "WEIGHTED_EXPOSURESUN");
 
-   m_roiCuts->writeGtiExtension(output_file);
-   double tstart(m_roiCuts->minTime());
-   double tstop(m_roiCuts->maxTime());
+   const double tstart(m_roiCuts->minTime());
+   const double tstop(m_roiCuts->maxTime());
 
-   writeDateKeywords(output_file, tstart, tstop);
+   m_exposure->writeFile(output_file, tstart, tstop, *m_roiCuts);
 }
 
 void ExposureCubeSun::writeTableKeywords(const std::string & outfile,

@@ -3,7 +3,7 @@
 
 @author G. Johannesson
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/CosineBinner2D.h,v 1.4 2012/02/29 11:28:21 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/CosineBinner2D.h,v 1.6 2012/03/23 14:10:11 gudlaugu Exp $
 */
 
 #ifndef SolarSystemTools_CosineBinner2D_h
@@ -24,7 +24,7 @@ namespace SolarSystemTools {
 
     */
 
-class CosineBinner2D : std::vector<double> {
+class CosineBinner2D : public std::vector<double> {
 public:
     CosineBinner2D();
     
@@ -49,14 +49,8 @@ public:
     double operator()(double costheta, double costheta2, double phi=-3*M_PI)const;
 
     /// Provide access through the real index
-    double& operator[](size_t i);
-    double operator[](size_t i) const;
-
-    size_t size() const {return std::vector<double>::size();}
-    iterator begin() {return std::vector<double>::begin();}
-    const_iterator begin() const {return std::vector<double>::begin();}
-    iterator end() {return std::vector<double>::end();}
-    const_iterator end() const {return std::vector<double>::end();}
+    double& value(size_t i);
+    double value(size_t i) const;
 
 		CosineBinner2D & operator += (const CosineBinner2D &other);
 
@@ -74,6 +68,13 @@ public:
 
     /// True index from an iterator
     size_t index(const const_iterator &i) const;
+
+		/// A list of all the indices
+		std::vector<size_t> indices() const;
+
+		/// Set values from an array of indices and values
+		void setValues(const std::vector<size_t> &indices, const std::vector<double> &values);
+
 
     /// integral over the range with functor accepting costheta and costheta2 as an arg. 
     template<class F>
@@ -188,6 +189,7 @@ private:
 		std::vector<std::pair<size_t,size_t> >::iterator icostheta2toi(size_t icostheta2);
 		std::vector<std::pair<size_t,size_t> >::const_iterator itoicostheta2(size_t i) const;
 
+		size_t findI2orAdd(size_t icostheta2);
     size_t icostheta2(const CosineBinner2D::const_iterator &i) const;
     size_t aindex(double costheta, double costheta2, double phi) const;
 
