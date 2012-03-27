@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.5 2012/03/21 22:50:20 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.6 2012/03/23 14:10:12 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -88,9 +88,7 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
        (*itor)["Index"].get(index);
        assert( values.size() == index.size() );
 
-       for (size_t i = 0; i < index.size(); ++i) {
-          (*haitor)[index[i]] = values[i];
-       }
+			 (*haitor).setValues(index,values);
 
     }
     delete &table; 
@@ -250,15 +248,17 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
 {
 		// Check and see if the tablename is already in the file, add it if it is
 		// missing
-	  tip::FileSummary summary;
-		tip::IFileSvc::instance().getFileSummary(outputfile, summary);
 		bool add = true;
-		for (size_t i(0); i < summary.size(); ++i) {
-			if (summary[i].getExtId() == tablename) {
-				add = false;
-				break;
+		try {
+			tip::FileSummary summary;
+			tip::IFileSvc::instance().getFileSummary(outputfile, summary);
+			for (size_t i(0); i < summary.size(); ++i) {
+				if (summary[i].getExtId() == tablename) {
+					add = false;
+					break;
+				}
 			}
-		}
+		} catch (tip::TipException & eObj) {}
     if (add) tip::IFileSvc::instance().appendTable(outputfile, tablename);
     tip::Table & table = *tip::IFileSvc::instance().editTable( outputfile, tablename);
 
@@ -276,17 +276,8 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
     // now just copy
     for( ; haitor != data().end(); ++haitor, ++itor)
     {
-       std::vector<double> values;
-       std::vector<size_t> index;
-       CosineBinner2D::const_iterator it = (*haitor).begin();
-       for ( ; it != (*haitor).end(); ++it){
-          if ( (*it) != 0 ) {
-             index.push_back((*haitor).index(it));
-             values.push_back(*it);
-          }
-       }
-       (*itor)["Values"].set(values);
-       (*itor)["Index"].set(index);
+       (*itor)["Index"].set((*haitor).indices());
+       (*itor)["Values"].set(*haitor);
     }
 
     // set the headers (TODO: do the comments, too)

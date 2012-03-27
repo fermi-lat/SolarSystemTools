@@ -3,7 +3,7 @@
  * @brief Implementation for ExposureCubeSun wrapper class of SolarSystemTools::Exposure
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.3 2012/03/21 22:50:20 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.4 2012/03/23 14:10:12 gudlaugu Exp $
  */
 
 #include <iomanip>
@@ -191,33 +191,38 @@ void ExposureCubeSun::load(const tip::Table * scData, bool verbose) {
    }
 }
 
-void ExposureCubeSun::writeFile(const std::string & outfile) const {
-   std::string dataPath = 
-      facilities::commonUtilities::getDataPath("SolarSystemTools");
-   std::string templateFile = 
-      facilities::commonUtilities::joinPath(dataPath, "LivetimeCubeSunTemplate");
-   tip::IFileSvc & fileSvc(tip::IFileSvc::instance());
-   fileSvc.createFile(outfile, templateFile);
-
-   writeFilename(outfile);
-
-	 m_exposure->write(outfile, "EXPOSURESUN");
-
-   m_weightedExposure->write(outfile, "WEIGHTED_EXPOSURESUN");
-
-   writeBins(outfile);
+void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::string &extname, double start, double stop, const Likelihood::RoiCuts &cuts) const {
+		 tip::Table * outtable(tip::IFileSvc::instance().editTable(outfile, extname));
+		 tip::Header & header(outtable->getHeader());
+		 header["TSTART"].set(start);
+		 header["TSTOP"].set(stop);
+		 cuts.writeDssKeywords(header);
+		 delete outtable;
 }
 
-void ExposureCubeSun::writeFilename(const std::string & outfile) const {
-   tip::IFileSvc & fileSvc(tip::IFileSvc::instance());
-   tip::Image * phdu(fileSvc.editImage(outfile, ""));
-   phdu->getHeader()["FILENAME"].set(facilities::Util::basename(outfile));
-   delete phdu;
+void ExposureCubeSun::writeFile(const std::string & outfile, double start, double stop, const Likelihood::RoiCuts &cuts) const {
+
+	 std::string ext="EXPOSURESUN";
+	 m_exposure->write(outfile, ext);
+	 writeKeywords(outfile, ext, start, stop, cuts);
+
+	 ext = "WEIGHTED_EXPOSURESUN";
+   m_weightedExposure->write(outfile, ext);
+	 writeKeywords(outfile, ext, start, stop, cuts);
+
+   writeBins(outfile);
+
+	 cuts.writeGtiExtension(outfile);
 }
 
 void ExposureCubeSun::writeBins(const std::string & outfile) const {
    tip::IFileSvc & fileSvc(tip::IFileSvc::instance());
-   tip::Table * table = fileSvc.editTable(outfile, "CTHETABOUNDS");
+	 std::string extension="CTHETABOUNDS";
+	 fileSvc.appendTable(outfile, extension);
+   tip::Table * table = fileSvc.editTable(outfile, extension);
+
+	 table->appendField("CTHETA_MIN", "1D");
+	 table->appendField("CTHETA_MAX", "1D");
    table->setNumRecords(CosineBinner2D::nbins());
 
    tip::Table::Iterator it(table->begin());
@@ -232,7 +237,12 @@ void ExposureCubeSun::writeBins(const std::string & outfile) const {
    }
    delete table;
 
-   table = fileSvc.editTable(outfile, "THETASUNBOUNDS");
+	 extension = "THETASUNBOUNDS";
+	 fileSvc.appendTable(outfile, extension);
+   table = fileSvc.editTable(outfile, extension);
+
+	 table->appendField("THETA_MIN", "1D");
+	 table->appendField("THETA_MAX", "1D");
    table->setNumRecords(CosineBinner2D::nbins2());
 
    tip::Table::Iterator itSun(table->begin());

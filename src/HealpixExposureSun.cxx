@@ -4,7 +4,7 @@
  * various energies.
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/HealpixExposureSun.cxx,v 1.2 2012/03/21 22:50:20 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/HealpixExposureSun.cxx,v 1.3 2012/03/23 14:10:12 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -282,8 +282,8 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
 	 for( ; haitor != m_exposureMap.end(); ++haitor, ++itor)
 	 {
 		 std::vector<size_t> index = (*haitor).indices();
-		 (*itor)["Values"].set(*haitor);
 		 (*itor)["Index"].set(index);
+		 (*itor)["Values"].set(*haitor);
 	 }
 
 	 tip::Header & header(table->getHeader());
