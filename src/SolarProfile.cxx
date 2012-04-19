@@ -3,7 +3,7 @@
  * @brief Virtual access class to solar profiles for the solar template class
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/BinnedExposureSun.cxx,v 1.2 2012/02/13 22:24:37 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarProfile.cxx,v 1.1 2012/02/15 03:03:51 gudlaugu Exp $
  */
 
 #include <vector>
@@ -30,7 +30,7 @@ namespace SolarSystemTools {
 
 		//Do interpolation in angle (linear in costheta) and energy (powerlaw)
 		const std::vector<double>::const_iterator th_it = std::upper_bound(m_costheta.begin(), m_costheta.end(), costheta, std::greater<double>());
-		const size_t i_th = (th_it == m_costheta.end()) ? m_energies.size()-1 : th_it-m_costheta.begin();
+		const size_t i_th = (th_it == m_costheta.end()) ? m_costheta.size()-1 : th_it-m_costheta.begin();
 
 		const std::vector<double>::const_iterator en_it = std::lower_bound(m_energies.begin(), m_energies.end(), energy);
 		const size_t i_en = (en_it == m_energies.end()) ? m_energies.size()-1 : en_it-m_energies.begin();

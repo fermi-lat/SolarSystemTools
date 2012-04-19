@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.6 2012/03/23 14:10:12 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.7 2012/03/27 22:39:31 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -119,7 +119,7 @@ ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double thbinsize, 
 {
 	const double cosmin2 = cos(thmax*M_PI/180.);
     unsigned int cosbins = static_cast<unsigned int>(1./cosbinsize);
-    unsigned int cosbins2 = static_cast<unsigned int>( pow( (1-cosmin2)/(1-cos(thbinsize*M_PI/180.)) , 1./3.) );
+    unsigned int cosbins2 = static_cast<unsigned int>( pow( (1-cosmin2)/(1-cos(thbinsize*M_PI/180.)) , 1./powerbin) );
     if( cosbins != CosineBinner2D::nbins() || cosbins2 != CosineBinner2D::nbins2() ) { 
         CosineBinner2D::setBinning(0, cosmin2, cosbins, cosbins2);
     }

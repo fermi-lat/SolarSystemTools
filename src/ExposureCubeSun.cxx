@@ -3,7 +3,7 @@
  * @brief Implementation for ExposureCubeSun wrapper class of SolarSystemTools::Exposure
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.4 2012/03/23 14:10:12 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.5 2012/03/27 22:39:31 gudlaugu Exp $
  */
 
 #include <iomanip>
@@ -255,24 +255,6 @@ void ExposureCubeSun::writeBins(const std::string & outfile) const {
    delete table;
 }
    
-void ExposureCubeSun::setCosbinsFieldFormat(const std::string & outfile,
-                                         const ExposureSun * self,
-                                         const std::string & extname) const {
-   int status(0);
-
-   fitsfile * fptr(0);
-   std::string extfilename(outfile + "[" + extname + "]");
-   fits_open_file(&fptr, extfilename.c_str(), READWRITE, &status);
-   fitsReportError(status, "ExposureCubeSun::setCosbinsFieldFormat");
-   
-   int colnum(1); // by assumption
-   fits_modify_vector_len(fptr, colnum, CosineBinner2D::nbins()*CosineBinner2D::nbins2()*(1+CosineBinner2D::nphibins()), &status);
-   fitsReportError(status, "ExposureCubeSun::setCosbinsFieldFormat");
-
-   fits_close_file(fptr, &status);
-   fitsReportError(status, "ExposureCubeSun::setCosbinsFieldFormat");
-}
-
 bool ExposureCubeSun::
 acceptInterval(double start, double stop, 
                const std::vector< std::pair<double, double> > & timeCuts,
