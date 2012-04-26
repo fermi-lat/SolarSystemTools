@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Thu Apr 26 08:03:21 PDT 2012
+SolarSystemTools/pfiles
+
+Modified Files:
+	gtexphpsun.par 
+Log Message:
+Fixed a bug in the energy interpolation in SolarProfile.
+    *
+------------------------------------------------------------
 User: gudlaugu  Thu Apr 19 16:59:00 PDT 2012
 SolarSystemTools/src
 
