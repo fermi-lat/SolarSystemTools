@@ -1,4 +1,4 @@
-# $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/pfiles/gtexpcubesun.par,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/pfiles/gtexphpsun.par,v 1.1 2012/02/16 23:19:52 gudlaugu Exp $
 #
 # General parameters.
 infile,f,a,"",,,"Livetime cube file"
@@ -6,7 +6,7 @@ outfile,f,a,"",,,"Output file name"
 irfs,s,a,"P7SOURCE_V6",,,"Response functions to use"
 
 # Parameters for user-defined map.
-binsz,r,a,1,,,"Image scale (in degrees/pixel)"
+binsz,r,a,0,,,"Image scale (in degrees/pixel)"
 ebinalg,s,h,LOG,LOG|FILE,,"Algorithm for defining energy bins"
 emin,r,a,100,,,"Start energy (MeV) of first bin"
 emax,r,a,3e5,,,"Stop energy (MeV) of last bin"
