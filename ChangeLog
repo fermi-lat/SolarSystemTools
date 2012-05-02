@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: gudlaugu  Wed May  2 10:49:26 PDT 2012
+SolarSystemTools/pfiles
+
+Modified Files:
+	gtltcubesun.par 
+Log Message:
+Added possibility to calculate templates for other solar system bodies, taking into account the parallax due to satelite position.  Fixed a factor of 2 bug in the solar template tool.  Added checks for binning, zenith cut, and solar system body when summing ltcubes.
+    *
+------------------------------------------------------------
+User: gudlaugu  Wed May  2 10:49:26 PDT 2012
 SolarSystemTools/SolarSystemTools
 
 Modified Files:
