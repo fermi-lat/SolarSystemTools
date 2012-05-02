@@ -3,7 +3,7 @@
  * @brief Create an Exposure hypercube including distance from solar center
  * @author G. Johannesson
  *
- *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.3 2012/03/23 14:10:13 gudlaugu Exp $
+ *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.4 2012/03/27 22:39:32 gudlaugu Exp $
  */
 
 #include <cstdlib>
@@ -68,7 +68,7 @@ namespace {
  *
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.3 2012/03/23 14:10:13 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.4 2012/03/27 22:39:32 gudlaugu Exp $
  */
 class ExposureCubeSun : public st_app::StApp {
 public:
@@ -229,12 +229,15 @@ void ExposureCubeSun::createDataCube() {
       SolarSystemTools::CosineBinner2D::setPhiBins(nphibins);
    }
 
+	 // Set the SolarSystem body
+	 astro::SolarSystem::Body body = SolarSystemTools::ExposureCubeSun::stringToBody(m_pars["body"]);
+
    m_exposure = new SolarSystemTools::ExposureCubeSun(m_pars["binsz"], 
                                              m_pars["dcostheta"],
                                              m_pars["dthetasun"],
                                              m_pars["thetasunmax"],
 																						 m_pars["powerbinsun"],
-                                             timeCuts, gtis, zmax);
+                                             timeCuts, gtis, body, zmax);
    std::string scFile = m_pars["scfile"];
    st_facilities::Util::file_ok(scFile);
    std::vector<std::string> scFiles;
