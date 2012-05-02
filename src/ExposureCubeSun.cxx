@@ -3,10 +3,12 @@
  * @brief Implementation for ExposureCubeSun wrapper class of SolarSystemTools::Exposure
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.5 2012/03/27 22:39:31 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.6 2012/04/19 23:58:59 gudlaugu Exp $
  */
 
 #include <iomanip>
+#include <algorithm>
+#include <cctype>
 
 #include "tip/Header.h"
 #include "tip/IFileSvc.h"
@@ -18,6 +20,8 @@
 
 #include "SolarSystemTools/ExposureCubeSun.h"
 #include "SolarSystemTools/Observation.h"
+
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace {
    bool compareFirst(const std::pair<double, double> & a, 
@@ -41,7 +45,8 @@ ExposureCubeSun::ExposureCubeSun(const ExposureCubeSun & other)
      m_fileName(other.m_fileName), 
 		 m_gtis(other.m_gtis),
 		 m_timeCuts(other.m_timeCuts),
-		 m_solar_dir(other.m_solar_dir),
+		 m_source_dir(other.m_source_dir),
+		 m_body(other.m_body),
      m_hasPhiDependence(other.m_hasPhiDependence) {
    if (other.m_weightedExposure) {
       m_weightedExposure = new ExposureSun(*(other.m_weightedExposure));
@@ -69,13 +74,14 @@ ExposureCubeSun::
 ExposureCubeSun(double skybin, double costhetabin, double thetabin, double thetamax, double powerbinsun,
              const std::vector< std::pair<double, double> > & timeCuts,
              const std::vector< std::pair<double, double> > & gtis,
+						 astro::SolarSystem::Body body,
              double zenmax)
    : m_efficiencyFactor(0),
 	   m_haveFile(false), m_fileName(""),
 	   m_hasPhiDependence(false),
      m_costhetabin(costhetabin), m_timeCuts(timeCuts), m_gtis(gtis),
      m_thetabin(thetabin), m_thetamax(thetamax), m_numIntervals(0), 
-		 m_solar_dir(astro::SolarSystem::SUN),
+		 m_source_dir(body), m_body(body),
      m_exposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax, powerbinsun,
                                                 std::cos(zenmax*M_PI/180.))),
      m_weightedExposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax, powerbinsun,
@@ -161,10 +167,14 @@ void ExposureCubeSun::load(const tip::Table * scData, bool verbose) {
          row["dec_scx"].get(decx);
          row["ra_zenith"].get(ra_zenith);
          row["dec_zenith"].get(dec_zenith);
+
+				 std::vector<double> position;
+				 row["sc_position"].get(position);
 				//Usa astro to calculate the direction to the sun at center of bin
 				const double mjd = (start+stop)/2./86400. + s_mjd_missionStart;
-				astro::SkyDir scsun(m_solar_dir.direction(mjd));
+				astro::SkyDir scsun(m_source_dir.direction(mjd, CLHEP::Hep3Vector(position[0]/1000., position[1]/1000., position[2]/1000.)));
          double weight(livetime/(stop - start));
+
          if (CosineBinner2D::nphibins() == 0) {
             m_exposure->fill(astro::SkyDir(ra, dec), scsun, astro::SkyDir(ra_zenith, dec_zenith), 
                  deltat*fraction);
@@ -191,11 +201,87 @@ void ExposureCubeSun::load(const tip::Table * scData, bool verbose) {
    }
 }
 
+astro::SolarSystem::Body ExposureCubeSun::stringToBody(const std::string& body) {
+
+	//Create an uppercase version
+	std::string bodyUpper(body);
+	std::transform(body.begin(), body.end(),bodyUpper.begin(), toupper);
+
+	if (bodyUpper == "MERCURY")
+		return astro::SolarSystem::MERCURY;
+	else if (bodyUpper == "VENUS")
+		return astro::SolarSystem::VENUS;
+	else if (bodyUpper == "EARTH")
+		return astro::SolarSystem::EARTH;
+	else if (bodyUpper == "MARS")
+		return astro::SolarSystem::MARS;
+	else if (bodyUpper == "JUPITER")
+		return astro::SolarSystem::JUPITER;
+	else if (bodyUpper == "SATURN")
+		return astro::SolarSystem::SATURN;
+	else if (bodyUpper == "URANUS")
+		return astro::SolarSystem::URANUS;
+	else if (bodyUpper == "NEPTUNE")
+		return astro::SolarSystem::NEPTUNE;
+	else if (bodyUpper == "PLUTO")
+		return astro::SolarSystem::PLUTO;
+	else if (bodyUpper == "MOON")
+		return astro::SolarSystem::MOON;
+	else if (bodyUpper == "SUN")
+		return astro::SolarSystem::SUN;
+	else
+		throw(std::runtime_error("No such SolarSystem::Body \""+body+"\""));
+
+}
+
+std::string ExposureCubeSun::bodyToString(astro::SolarSystem::Body body) {
+	std::string output;
+	
+	switch (body) {
+		case astro::SolarSystem::MERCURY:
+			output = "MERCURY";
+			break;
+		case astro::SolarSystem::VENUS:
+			output = "VENUS";
+			break;
+		case astro::SolarSystem::EARTH:
+			output = "EARTH";
+			break;
+		case astro::SolarSystem::MARS:
+			output = "MARS";
+			break;
+		case astro::SolarSystem::JUPITER:
+			output = "JUPITER";
+			break;
+		case astro::SolarSystem::SATURN:
+			output = "SATURN";
+			break;
+		case astro::SolarSystem::URANUS:
+			output = "URANUS";
+			break;
+		case astro::SolarSystem::NEPTUNE:
+			output = "NEPTUNE";
+			break;
+		case astro::SolarSystem::PLUTO:
+			output = "PLUTO";
+			break;
+		case astro::SolarSystem::MOON:
+			output = "MOON";
+			break;
+		case astro::SolarSystem::SUN:
+			output = "SUN";
+			break;
+	}
+
+	return output;
+}
+
 void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::string &extname, double start, double stop, const Likelihood::RoiCuts &cuts) const {
 		 tip::Table * outtable(tip::IFileSvc::instance().editTable(outfile, extname));
 		 tip::Header & header(outtable->getHeader());
 		 header["TSTART"].set(start);
 		 header["TSTOP"].set(stop);
+		 header["SSBODY"].set(bodyToString(m_body));
 		 cuts.writeDssKeywords(header);
 		 delete outtable;
 }
@@ -360,6 +446,15 @@ double ExposureCubeSun::livetime(const astro::SkyDir & dir,
 }
 
 ExposureCubeSun& ExposureCubeSun::operator += (const ExposureCubeSun &other) {
+	//Check that the bodies match
+	if (m_body != other.m_body)
+		throw(std::runtime_error("ExposureCubeSun::operator +=: bodies don't match"));
+	//Check that the binning matches
+	if (m_costhetabin != other.m_costhetabin)
+		throw(std::runtime_error("ExposureCubeSun::operator +=: instrument angle binning does not match"));
+	if (m_thetabin != other.m_thetabin || m_thetamax != other.m_thetamax)
+		throw(std::runtime_error("ExposureCubeSun::operator +=: moving source angle binning does not match"));
+
 	*m_exposure += *(other.m_exposure);
 	*m_weightedExposure += *(other.m_weightedExposure);
 	return *this;
