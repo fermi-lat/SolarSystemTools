@@ -3,7 +3,7 @@
  * @brief Exposure time hypercube.
  * @author G. Johannesson <gudlaugu@glast2.stanford.edu>
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.6 2012/03/27 22:39:30 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.7 2012/05/02 17:49:25 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_ExposureCubeSun_h
@@ -35,7 +35,7 @@ namespace SolarSystemTools {
  *
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.6 2012/03/27 22:39:30 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.7 2012/05/02 17:49:25 gudlaugu Exp $
  */
 
 class ExposureCubeSun {
@@ -215,6 +215,7 @@ private:
    };
 #endif
 	 void writeKeywords(const std::string &outfile, const std::string &extname, double start, double stop, const Likelihood::RoiCuts &cuts) const;
+	 void readKeywords(const std::string &outfile, const std::string &extname);
    double m_costhetabin;
    double m_thetabin;
    double m_thetamax;

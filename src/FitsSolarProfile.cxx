@@ -4,7 +4,7 @@
  * FITS file compatible with Andy's solar IC tool
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/FitsSolarProfile.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/FitsSolarProfile.cxx,v 1.1 2012/02/15 03:03:51 gudlaugu Exp $
  */
 
 #include <string>
@@ -41,7 +41,7 @@ namespace SolarSystemTools {
 
 		delete table;
 
-		table = tip::IFileSvc::instance().readTable(filename, "SPECTRUM_FOR_ANGLES");
+		table = tip::IFileSvc::instance().readTable(filename, "SPECTRUM_FOR_ANGLES_IC_DISK");
 
 		m_profile.resize(m_costheta.size()*m_energies.size());
 
