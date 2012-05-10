@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Thu May 10 15:21:17 PDT 2012
+SolarSystemTools/SolarSystemTools
+
+Modified Files:
+	ExposureCubeSun.h 
+Log Message:
+Changed the name of the profile table to SPECTRUM_FOR_ANGLES_IC_DISK and made some parameters hidden
+    *
+------------------------------------------------------------
 User: gudlaugu  Thu May 10 15:17:30 PDT 2012
 SolarSystemTools/src
 
