@@ -3,7 +3,7 @@
 
 @author G. Johannesson
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.6 2012/03/23 14:10:12 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.7 2012/03/27 22:39:31 gudlaugu Exp $
 */
 
 
@@ -240,11 +240,7 @@ size_t CosineBinner2D::findI2orAdd(size_t icostheta2) {
 			m_icostheta2toi.insert(it2, std::pair<size_t,size_t>(icostheta2,i2));
 			m_itoicostheta2.insert(m_itoicostheta2.end(), std::pair<size_t,size_t>(i2,icostheta2));
 
-			//Resize the storage, ~5% at a time
-			const size_t alloc((s_nbins2)/20+1);
-			if (i2 % alloc == 0){
-				reserve( std::min( size()+alloc*s_nbins*(s_phibins+1), s_nbins*(s_nbins2)*(s_phibins+1) ) );
-			}
+			//Resize the storage
 			resize(size()+s_nbins*(s_phibins+1), 0.0);
 
 		} else {
