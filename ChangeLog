@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Thu May 10 15:17:30 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	ExposureCubeSun.cxx ExposureSun.cxx 
+Log Message:
+Fixed the tests when adding ltcubes.  Also ZENMAX is now the actual angle in degrees rather than its cosine.
+    *
+------------------------------------------------------------
 User: gudlaugu  Thu May 10 15:16:19 PDT 2012
 SolarSystemTools/src
 
