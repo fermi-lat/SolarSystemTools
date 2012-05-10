@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Thu May 10 15:16:19 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	CosineBinner2D.cxx 
+Log Message:
+Cosinebinner now reserves memory in smaller chunks at a time
+    *
+------------------------------------------------------------
 User: gudlaugu  Wed May  2 10:49:27 PDT 2012
 SolarSystemTools/src/makeSolarExposureCube
 
