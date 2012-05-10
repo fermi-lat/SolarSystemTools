@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.8 2012/04/19 23:58:59 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.9 2012/05/02 17:49:27 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -68,7 +68,9 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
     }
 
 		try{
-			hdr["ZENMAX"].get(m_zcut);
+			double zenmax;
+			hdr["ZENMAX"].get(zenmax);
+			m_zcut = cos(zenmax*M_PI/180.);
 		}catch(const std::exception &){}
 
     astro::SkyDir::CoordSystem coordsys = (check == "GAL")?
@@ -301,7 +303,7 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
     hdr["COSMIN2"].set(CosineBinner2D::cosmin2());
 		hdr["POWER2"].set(CosineBinner2D::power2());
     hdr["PHIBINS"].set(CosineBinner2D::nphibins());
-		hdr["ZENMAX"].set(m_zcut);
+		hdr["ZENMAX"].set(acos(m_zcut)*180/M_PI);
 
     // need to do this to ensure file is closed when pointer goes out of scope
     delete &table;

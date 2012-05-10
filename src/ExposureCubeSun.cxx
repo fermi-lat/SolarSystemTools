@@ -3,7 +3,7 @@
  * @brief Implementation for ExposureCubeSun wrapper class of SolarSystemTools::Exposure
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.6 2012/04/19 23:58:59 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.7 2012/05/02 17:49:27 gudlaugu Exp $
  */
 
 #include <iomanip>
@@ -67,6 +67,7 @@ void ExposureCubeSun::readExposureCubeSun(std::string filename) {
       m_weightedExposure = 0;
    }
    m_haveFile = true;
+	 readKeywords(filename, "EXPOSURESUN");
    m_hasPhiDependence = phiDependence(filename);
 }
 
@@ -276,6 +277,17 @@ std::string ExposureCubeSun::bodyToString(astro::SolarSystem::Body body) {
 	return output;
 }
 
+void ExposureCubeSun::readKeywords(const std::string &outfile, const std::string &extname ) {
+		 tip::Table * outtable(tip::IFileSvc::instance().editTable(outfile, extname));
+		 tip::Header & header(outtable->getHeader());
+		
+		 std::string body;
+		 header["SSBODY"].get(body);
+		 m_body = stringToBody(body);
+
+		 delete outtable;
+}
+
 void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::string &extname, double start, double stop, const Likelihood::RoiCuts &cuts) const {
 		 tip::Table * outtable(tip::IFileSvc::instance().editTable(outfile, extname));
 		 tip::Header & header(outtable->getHeader());
@@ -449,11 +461,6 @@ ExposureCubeSun& ExposureCubeSun::operator += (const ExposureCubeSun &other) {
 	//Check that the bodies match
 	if (m_body != other.m_body)
 		throw(std::runtime_error("ExposureCubeSun::operator +=: bodies don't match"));
-	//Check that the binning matches
-	if (m_costhetabin != other.m_costhetabin)
-		throw(std::runtime_error("ExposureCubeSun::operator +=: instrument angle binning does not match"));
-	if (m_thetabin != other.m_thetabin || m_thetamax != other.m_thetamax)
-		throw(std::runtime_error("ExposureCubeSun::operator +=: moving source angle binning does not match"));
 
 	*m_exposure += *(other.m_exposure);
 	*m_weightedExposure += *(other.m_weightedExposure);
