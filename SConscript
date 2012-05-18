@@ -1,8 +1,8 @@
 # -*- python -*-
 #
 # Authors: Gudlaugur Johannesson <gudlaugu@glast2.stanford.edu>
-# Version: SolarSystemTools-01-00-00
-# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SConscript,v 1.5 2012/03/21 22:50:18 gudlaugu Exp $
+# Version: SolarSystemTools-01-00-01
+# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SConscript,v 1.6 2012/05/10 22:24:44 gudlaugu Exp $
 Import('baseEnv')
 Import('listFiles')
 progEnv = baseEnv.Clone()

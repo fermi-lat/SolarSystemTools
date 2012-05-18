@@ -1,10 +1,11 @@
 /** @file release.notes
     @brief package dataSubselector
-    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.2 2012/02/15 03:05:26 gudlaugu Exp $
+    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.3 2012/05/10 22:24:44 gudlaugu Exp $
 
     @verbatim
     * EOH *
 
+ SolarSystemTools-01-00-01 18-May-2012 gudlaugu Bug fix to make it compile on windows
  SolarSystemTools-01-00-00 10-May-2012 gudlaugu First release, has gone trough testing
  SolarSystemTools-00-01-00 14-Feb-2012 gudlaugu Added a tool to create an healpix binned solar exposure map and another tool to create a template for the sun from those maps
     @endverbatim
