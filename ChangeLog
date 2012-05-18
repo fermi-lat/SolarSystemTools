@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Fri May 18 14:33:52 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	CosineBinner2D.cxx 
+Log Message:
+Added algorithm for upper and lower bound in cosinebinner2D
+    *
+------------------------------------------------------------
 TAG
 Tag name: SolarSystemTools-01-00-00, operation: add
 Package: SolarSystemTools
