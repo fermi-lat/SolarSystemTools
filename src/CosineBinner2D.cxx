@@ -3,7 +3,7 @@
 
 @author G. Johannesson
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.7 2012/03/27 22:39:31 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.8 2012/05/10 22:16:18 gudlaugu Exp $
 */
 
 
@@ -13,6 +13,7 @@ $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 
 #include <stdexcept>
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 namespace{
     const double pi4( M_PI/4.0), pi2(M_PI/2.);
