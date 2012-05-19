@@ -3,7 +3,7 @@
 
 @author G. Johannesson
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.8 2012/05/10 22:16:18 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.9 2012/05/18 21:33:51 gudlaugu Exp $
 */
 
 
@@ -147,13 +147,13 @@ void CosineBinner2D::fill(double costheta, double costheta2, double phi, double 
 double& CosineBinner2D::operator()(double costheta, double costheta2, double phi)
 {
 	const size_t i = index(costheta, costheta2, phi);
-	value(i);
+	return value(i);
 }
 
 double CosineBinner2D::operator()(double costheta, double costheta2, double phi)const
 {
 	const size_t i = index(costheta, costheta2, phi);
-	value(i);
+	return value(i);
 }
 
 double & CosineBinner2D::value (size_t i) {
