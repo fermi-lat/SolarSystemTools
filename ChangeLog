@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Fri May 18 17:02:19 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	CosineBinner2D.cxx 
+Log Message:
+Fixed a bug, missing return statement.
+    *
+------------------------------------------------------------
 TAG
 Tag name: SolarSystemTools-01-00-01, operation: add
 Package: SolarSystemTools
