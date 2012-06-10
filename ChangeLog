@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Sun Jun 10 06:15:53 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	FitsSolarProfile.cxx 
+Log Message:
+Fixed a typo in table name when reading solar profile from fits file.
+    *
+------------------------------------------------------------
 TAG
 Tag name: SolarSystemTools-01-00-02, operation: add
 Package: SolarSystemTools
