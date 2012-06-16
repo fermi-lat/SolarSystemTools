@@ -3,7 +3,7 @@
  * @brief Create an Exposure hypercube including distance from solar center
  * @author G. Johannesson
  *
- *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.4 2012/03/27 22:39:32 gudlaugu Exp $
+ *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.5 2012/05/02 17:49:27 gudlaugu Exp $
  */
 
 #include <cstdlib>
@@ -13,6 +13,7 @@
 #include <sstream>
 #include <memory>
 #include <stdexcept>
+#include <cstdio>
 
 #include "st_stream/StreamFormatter.h"
 
@@ -68,7 +69,7 @@ namespace {
  *
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.4 2012/03/27 22:39:32 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.5 2012/05/02 17:49:27 gudlaugu Exp $
  */
 class ExposureCubeSun : public st_app::StApp {
 public:
