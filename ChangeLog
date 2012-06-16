@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Sat Jun 16 04:29:15 PDT 2012
+SolarSystemTools/src/gtltsumsun
+
+Added Files:
+	gtltsumsun.cxx 
+Log Message:
+Fixed include in solar ltcube and added solar ltcube sum tool.
+    *
+------------------------------------------------------------
 User: gudlaugu  Sat Jun 16 04:27:44 PDT 2012
 SolarSystemTools/src/gtltsumsun
 
