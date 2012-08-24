@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: gudlaugu  Fri Aug 24 06:48:46 PDT 2012
+SolarSystemTools/SolarSystemTools
+
+Modified Files:
+	ExposureCubeSun.h ExposureSun.h HealpixExposureSun.h 
+	SolarProfile.h 
+Log Message:
+Added distance modulation to the solar system tools to account for eccentricity of the orbits.  Does not take into account distance variations in the extended solar emission.  Changed the format of the profiles from one value per column to storing the entire profile for each energy bin in an vector. Fixed a bug in the addition of solar ltcubes.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-29-00, operation: add
 Package: SolarSystemTools
