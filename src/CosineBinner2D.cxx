@@ -3,7 +3,7 @@
 
 @author G. Johannesson
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.9 2012/05/18 21:33:51 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/CosineBinner2D.cxx,v 1.10 2012/05/19 00:02:19 gudlaugu Exp $
 */
 
 
@@ -183,11 +183,18 @@ bool CosineBinner2D::hasCostheta2 ( double costheta ) const {
 }
 
 CosineBinner2D& CosineBinner2D::operator += (const CosineBinner2D &other) {
+	//If the pixel to be added is zero sized, nothing needs to be done
+	if (other.m_icostheta2toi.size() == 0)
+		return *this;
+
 	//Check that their sizes match (currently have no change to check cosbin2)
-	size_t sother = other.size()/other.m_icostheta2toi.size();
-	size_t s = size()/m_icostheta2toi.size();
-	if (sother != s)
-		throw std::runtime_error("CosineBinner2D::operator+=: sizes don't match");
+	//This can only be done if some data has been added
+	if (m_icostheta2toi.size() != 0) {
+		size_t sother = other.size()/other.m_icostheta2toi.size();
+		size_t s = size()/m_icostheta2toi.size();
+		if (sother != s)
+			throw std::runtime_error("CosineBinner2D::operator+=: sizes don't match");
+	}
 
 	//Loop over icostheta in other and add to current map
 	std::vector<std::pair<size_t,size_t> >::const_iterator it = other.m_itoicostheta2.begin();

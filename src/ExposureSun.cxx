@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.9 2012/05/02 17:49:27 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.10 2012/05/10 22:17:29 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -125,7 +125,7 @@ ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double thbinsize, 
 {
 	const double cosmin2 = cos(thmax*M_PI/180.);
     unsigned int cosbins = static_cast<unsigned int>(1./cosbinsize);
-    unsigned int cosbins2 = static_cast<unsigned int>( pow( (1-cosmin2)/(1-cos(thbinsize*M_PI/180.)) , 1./powerbin) );
+    unsigned int cosbins2 = static_cast<unsigned int>( pow( (1-cosmin2)/(1-cos(thbinsize*M_PI/180.)) , 1./powerbin) ) + 1;
     if( cosbins != CosineBinner2D::nbins() || cosbins2 != CosineBinner2D::nbins2() ) { 
         CosineBinner2D::setBinning(0, cosmin2, cosbins, cosbins2);
     }
@@ -159,10 +159,13 @@ public:
         @param deltat time to add
         @param dirz direction to use to determine angle (presumably the spacecraft z-axis)
         @param dirx direction of x-axis
+				@param dirsun direction of the moving source
         @param zenith optional zenith direction for potential cut
+				@param invDistSquared the inverse square distance to the moving source in light seconds, weighting not applied if 0
+				@param distCosCut weighting only applied if costhetasun > distCosCut, use -1 if no cut is needed.
         @param zcut optional cut: if -1, ignore
     */
-    Filler( double deltat, const astro::SkyDir& dirz, const astro::SkyDir& dirx, const astro::SkyDir& dirsun, astro::SkyDir zenith=astro::SkyDir(), double zcut=-1)
+    Filler( double deltat, const astro::SkyDir& dirz, const astro::SkyDir& dirx, const astro::SkyDir& dirsun, double invDistSquared, double distCosCut, astro::SkyDir zenith=astro::SkyDir(), double zcut=-1)
         : m_dirz(dirz())
         , m_rot(astro::PointingTransform(dirz,dirx).localToCelestial().inverse())
 				, m_dirsun(dirsun())
@@ -170,15 +173,19 @@ public:
         , m_deltat(deltat)
         , m_zcut(zcut)
         , m_total(0), m_lost(0)
+				, m_invDistSquared(invDistSquared)
+				, m_distCosCut(distCosCut)
         , m_use_phi(CosineBinner2D::nphibins()>0)
     {}
-    Filler( double deltat, const astro::SkyDir& dirz, const astro::SkyDir& dirsun, astro::SkyDir zenith=astro::SkyDir(), double zcut=-1)
+    Filler( double deltat, const astro::SkyDir& dirz, const astro::SkyDir& dirsun, double invDistSquared, double distCosCut, astro::SkyDir zenith=astro::SkyDir(), double zcut=-1)
         : m_dirz(dirz())
 				, m_dirsun(dirsun())
         , m_zenith(zenith())
         , m_deltat(deltat)
         , m_zcut(zcut)
         , m_total(0), m_lost(0)
+				, m_invDistSquared(invDistSquared)
+				, m_distCosCut(distCosCut)
         , m_use_phi(false)
     {}
     void operator()( const std::pair<CosineBinner2D*, Simple3Vector> & x)
@@ -192,12 +199,21 @@ public:
         if( ok) {
             // if ok, add to the angle histogram
             const Simple3Vector& pixeldir(x.second);
+						const double costhetasun = pixeldir.dot(m_dirsun);
+
+						//Weight with distance if needed
+						double deltat(m_deltat);
+						if (m_invDistSquared > 0) {
+							if (costhetasun > m_distCosCut)
+								deltat *= m_invDistSquared;
+						}
+
             if( m_use_phi) {
                 const CLHEP::Hep3Vector instrument_dir( pixeldir.transform(m_rot) );
                 const double costheta(instrument_dir.z()), phi(instrument_dir.phi());
-                x.first->fill( costheta, pixeldir.dot(m_dirsun), phi , m_deltat);
+                x.first->fill( costheta, costhetasun, phi , deltat);
             } else {
-               x.first->fill( pixeldir.dot(m_dirz), pixeldir.dot(m_dirsun), m_deltat);
+               x.first->fill( pixeldir.dot(m_dirz), costhetasun, deltat);
             }
 
             m_total += m_deltat;
@@ -211,7 +227,7 @@ private:
     Simple3Vector m_dirz, m_dirsun;
     CLHEP::HepRotation m_rot;
     Simple3Vector m_zenith;
-    double m_deltat, m_zcut;
+    double m_deltat, m_zcut, m_invDistSquared, m_distCosCut;
     mutable double m_total, m_lost;
     bool m_use_phi;
 };
@@ -222,31 +238,71 @@ void ExposureSun::fill(const astro::SkyDir& dirz, double deltat)
 
 void ExposureSun::fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, double deltat)
 {
-    Filler sum = for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun));
+    Filler sum = for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun, 0, -1));
     double total(sum.total());
     addtotal(total);
     m_lost += sum.lost();
 }
 
-
-void ExposureSun::fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, const astro::SkyDir& zenith, double deltat)
+void ExposureSun::fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, double deltat, double invDistSquared, double distCosCut)
 {
-    Filler sum = for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun, zenith, m_zcut));
-    double total(sum.total());
+	  Filler *sum;
+		if ( invDistSquared > 0 ) {
+			if (distCosCut > -1) {
+        sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun, invDistSquared, distCosCut)));
+			} else {
+				deltat *= invDistSquared;
+        sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun, 0, -1)));
+			}
+		} else {
+      sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun, 0, -1)));
+		}
+    double total(sum->total());
     addtotal(total);
-    m_lost += sum.lost();
+    m_lost += sum->lost();
+		delete sum;
+}
+
+
+void ExposureSun::fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, const astro::SkyDir& zenith, double deltat, double invDistSquared, double distCosCut)
+{
+	  Filler *sum;
+		if ( invDistSquared > 0 ) {
+			if (distCosCut > -1) {
+        sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun, invDistSquared, distCosCut, zenith, m_zcut)));
+			} else {
+				deltat *= invDistSquared;
+        sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun, 0, distCosCut, zenith, m_zcut)));
+			}
+		} else {
+      sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirsun, 0, distCosCut, zenith, m_zcut)));
+		}
+    double total(sum->total());
+    addtotal(total);
+    m_lost += sum->lost();
+		delete sum;
 }
 
 void ExposureSun::fill_zenith(const astro::SkyDir& dirz,const astro::SkyDir& dirx, 
 		                       const astro::SkyDir& dirsun,
                            const astro::SkyDir& zenith, 
-                           double deltat)
+                           double deltat, double invDistSquared, double distCosCut)
 {
-    Filler sum = for_each(m_dir_cache.begin(), m_dir_cache.end(), 
-        Filler(deltat, dirz, dirx, dirsun, zenith, m_zcut));
-    double total(sum.total());
+	  Filler *sum;
+		if ( invDistSquared > 0 ) {
+			if (distCosCut > -1) {
+        sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirx, dirsun, invDistSquared, distCosCut, zenith, m_zcut)));
+			} else {
+				deltat *= invDistSquared;
+        sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirx, dirsun, 0, -1, zenith, m_zcut)));
+			}
+		} else {
+      sum = new Filler(for_each(m_dir_cache.begin(), m_dir_cache.end(), Filler(deltat, dirz, dirx, dirsun, 0, -1, zenith, m_zcut)));
+		}
+    double total(sum->total());
     addtotal(total);
-    m_lost += sum.lost();
+    m_lost += sum->lost();
+		delete sum;
 }
 
 
@@ -270,7 +326,7 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
 
     // this is a work-around for a bug in tip v2r1p1
 
-    table.appendField("Index", "1PJ");
+    table.appendField("Index", "1PV");
     table.appendField("Values", "1PE");
     tip::Index_t numrecs =  data().size() ;
     table.setNumRecords(numrecs);
@@ -279,11 +335,23 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
     tip::Table::Iterator itor = table.begin();
     healpix::HealpixArray<CosineBinner2D>::const_iterator haitor = data().begin();
 
-    // now just copy
+    // Only store the non-zero values
     for( ; haitor != data().end(); ++haitor, ++itor)
     {
-       (*itor)["Index"].set((*haitor).indices());
-       (*itor)["Values"].set(*haitor);
+			std::vector<double> values((*haitor).size());
+			std::vector<unsigned int> indices((*haitor).size());
+			size_t j(0);
+			for ( size_t i(0); i < (*haitor).size(); ++i) {
+				if ( (*haitor)[i] != 0 ) {
+					indices[j] = (*haitor).indices()[i];
+					values[j] = (*haitor)[i];
+					++j;
+				}
+			}
+			indices.resize(j);
+			values.resize(j);
+       (*itor)["Index"].set(indices);
+       (*itor)["Values"].set(values);
     }
 
     // set the headers (TODO: do the comments, too)
@@ -328,6 +396,7 @@ ExposureSun& ExposureSun::operator += (const ExposureSun &other) {
 	return (*this);
 }
 
+/*
 void ExposureSun::load(const tip::Table * scData, 
                     const GTIvector& gti, 
                     bool verbose) {
@@ -410,4 +479,5 @@ bool ExposureSun::processEntry(const tip::ConstTableRecord & row, const GTIvecto
     return done; 
 
 }
+*/
 

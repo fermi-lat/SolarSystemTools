@@ -3,7 +3,7 @@
  * @brief Create an Exposure hypercube including distance from solar center
  * @author G. Johannesson
  *
- *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.5 2012/05/02 17:49:27 gudlaugu Exp $
+ *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.6 2012/06/16 11:29:15 gudlaugu Exp $
  */
 
 #include <cstdlib>
@@ -69,7 +69,7 @@ namespace {
  *
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.5 2012/05/02 17:49:27 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.6 2012/06/16 11:29:15 gudlaugu Exp $
  */
 class ExposureCubeSun : public st_app::StApp {
 public:
@@ -233,11 +233,20 @@ void ExposureCubeSun::createDataCube() {
 	 // Set the SolarSystem body
 	 astro::SolarSystem::Body body = SolarSystemTools::ExposureCubeSun::stringToBody(m_pars["body"]);
 
+	 // The first bin should always be 0.25 degrees to account for the sun and
+	 // the moon.  We have to slightly adjust the powerbinsun parameter
+	 const double thsunmax = m_pars["thetasunmax"];
+	 const double costhsunmax = cos(thsunmax*M_PI/180.);
+	 double powerbin = m_pars["powerbinsun"];
+	 const double ratio = (1-costhsunmax)/(1-cos(0.25*M_PI/180.));
+	 unsigned int cosbins2 = static_cast<unsigned int>( pow( ratio, 1./powerbin) );
+	 powerbin = log(ratio)/log(static_cast<double>(cosbins2)) + 1e-10; //The small number is to make sure the rounding does not go the wrong way
+
    m_exposure = new SolarSystemTools::ExposureCubeSun(m_pars["binsz"], 
                                              m_pars["dcostheta"],
-                                             m_pars["dthetasun"],
-                                             m_pars["thetasunmax"],
-																						 m_pars["powerbinsun"],
+																						 0.25,
+                                             thsunmax,
+																						 powerbin,
                                              timeCuts, gtis, body, zmax);
    std::string scFile = m_pars["scfile"];
    st_facilities::Util::file_ok(scFile);

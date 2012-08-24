@@ -3,7 +3,7 @@
  * @brief Access to intensity as a function of angle and energy
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/SolarProfile.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/SolarProfile.h,v 1.1 2012/02/15 03:03:50 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_SolarProfile_h
@@ -20,7 +20,7 @@ namespace SolarSystemTools {
  *
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/SolarSystemTools/SolarProfile.h,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/SolarProfile.h,v 1.1 2012/02/15 03:03:50 gudlaugu Exp $
  */
 
 class SolarProfile {
@@ -35,6 +35,8 @@ public:
 	 //! Return the average intensity over the theta range,  costhmin < costhmax
 	 double average (double costhmin, double costhmax, double energy) const;
 
+	 double avgDist () const { return m_avgDist; }
+
 
 protected:
 
@@ -46,6 +48,10 @@ protected:
 	 //! ascending
 	 std::vector<double> m_costheta;
 	 std::vector<double> m_energies;
+
+	 //! The average distance to the source used in the profile squared in units
+	 //! of lightseconds
+	 double m_avgDist;
 
 };
 

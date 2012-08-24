@@ -3,7 +3,7 @@
  * @brief Exposure time hypercube.
  * @author G. Johannesson <gudlaugu@glast2.stanford.edu>
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.7 2012/05/02 17:49:25 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.8 2012/05/10 22:21:17 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_ExposureCubeSun_h
@@ -35,7 +35,7 @@ namespace SolarSystemTools {
  *
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.7 2012/05/02 17:49:25 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.8 2012/05/10 22:21:17 gudlaugu Exp $
  */
 
 class ExposureCubeSun {
@@ -46,6 +46,8 @@ public:
                     m_efficiencyFactor(0),
                     m_haveFile(false), m_fileName(""),
                     m_hasPhiDependence(false),
+										m_distCosCut(-1),
+		   m_timeDist(0), m_time(0),
        m_timeCuts(std::vector<std::pair<double, double> >(0)),
        m_gtis(std::vector<std::pair<double, double> >(0))
 	{}
@@ -163,6 +165,9 @@ public:
       return m_numIntervals;
    }
 
+	 double distCosCut() const { return m_distCosCut; }
+	 double avgDist() const;
+
    /// @brief Normally one would re-implement the
    /// map_tools::Exposure::write(...) member function from the base
    /// class, but it is not virtual, so we add this method instead to
@@ -238,6 +243,15 @@ private:
 		static const double s_mjd_missionStart;
 		astro::SolarSystem m_source_dir;
 		astro::SolarSystem::Body m_body;
+
+		/// cosine of maximum angle to apply the distance weighting
+		double m_distCosCut;
+		/// time * distance to the source (time in seconds, distance 
+		/// in light seconds).  Used to calculate the time weighted average distance.
+		double m_timeDist;
+		/// Total livetime accumulated
+		double m_time;
+
    /// Minimum time to be considered given GTIs (MET s)
    double m_tmin;
 

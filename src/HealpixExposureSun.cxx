@@ -4,7 +4,7 @@
  * various energies.
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/HealpixExposureSun.cxx,v 1.3 2012/03/23 14:10:12 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/HealpixExposureSun.cxx,v 1.4 2012/03/27 22:39:32 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -61,14 +61,17 @@ namespace SolarSystemTools {
 
 HealpixExposureSun::HealpixExposureSun() : m_observation(0),
                                    m_costhmin(0), m_costhmax(1),
+																	 m_distCosCut(-1), m_avgDist(0),
                                    m_enforce_boundaries(false) {}
 
 HealpixExposureSun::HealpixExposureSun(const std::vector<double> & energies,
                                const Observation & observation,
                                const st_app::AppParGroup * pars) 
    : m_energies(energies), m_observation(&observation),
-     m_costhmin(0), m_costhmax(1),m_enforce_boundaries(false)  {
+     m_costhmin(0), m_costhmax(1), m_distCosCut(-1), m_avgDist(0), m_enforce_boundaries(false)  {
 
+	 m_distCosCut = m_observation->expCubeSun().distCosCut();
+	 m_avgDist = m_observation->expCubeSun().avgDist();
 	 pixel::setStride(energies.size());
    if (pars) {
       setMapGeometry(*pars);
@@ -81,6 +84,7 @@ HealpixExposureSun::HealpixExposureSun(const std::vector<double> & energies,
 
 HealpixExposureSun::HealpixExposureSun(const std::string & filename) 
    : m_observation(0), m_costhmin(0), m_costhmax(1),
+		 m_distCosCut(-1), m_avgDist(0),
      m_enforce_boundaries(false) {
 
    std::auto_ptr<const tip::Table>
@@ -128,6 +132,11 @@ HealpixExposureSun::HealpixExposureSun(const std::string & filename)
         // allow old value
         hdr["COORDTYPE"].get(check);
     }
+
+		hdr["AVGDIST"].get(m_avgDist);
+		double distThetaCut;
+		hdr["DISTTCUT"].get(distThetaCut);
+		m_distCosCut = cos(distThetaCut*M_PI/180.);
 
     astro::SkyDir::CoordSystem coordsys = (check == "GAL")?
         astro::SkyDir::GALACTIC: astro::SkyDir::EQUATORIAL;
@@ -230,6 +239,11 @@ void HealpixExposureSun::computeMap() {
      costhetasun[j] = cos((m_thetasun[j]+m_thetasun[j+1])/2.);
    }
 
+	 //The distance scaling cutoff
+	 const double distCosCut = m_observation->expCubeSun().distCosCut();
+	 const double avgDist = m_observation->expCubeSun().avgDist();
+	 const double avgDist2 = avgDist*avgDist;
+
 	 //Create a cache for AEff calculations
 	 std::vector<BinnedExposureSun::Aeff*> aeffs(m_energies.size());
 	 for (size_t i = 0; i < m_energies.size(); ++i)
@@ -250,7 +264,11 @@ void HealpixExposureSun::computeMap() {
 					 if (m_observation->expCubeSun().hasCosthetasun(dir,costhetasun[l])) {
 						 for (unsigned int k = 0; k < m_energies.size(); k++) {
 							 const BinnedExposureSun::Aeff &aeff = *aeffs[k]; 
-					     const double exposure = m_observation->expCubeSun().value(dir, costhetasun[l], aeff, m_energies.at(k));
+					     double exposure = m_observation->expCubeSun().value(dir, costhetasun[l], aeff, m_energies.at(k));
+							 //Here we assume the distCosCut aligns with one of the bins as
+							 //it should
+							 if (costhetasun[l] > distCosCut)
+								 exposure *= avgDist2;
 							 const unsigned int indx = l*m_energies.size() + k;
 							 m_exposureMap[dir].value(indx) += exposure;
 						 }
@@ -269,7 +287,7 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
    tip::IFileSvc::instance().appendTable(filename, ext);
    tip::Table * table = tip::IFileSvc::instance().editTable(filename, ext);
 
-	 table->appendField("Index", "1PJ");
+	 table->appendField("Index", "1PV");
 	 table->appendField("Values", "1PE");
    tip::Index_t numrecs =  m_exposureMap.size() ;
 	 table->setNumRecords(numrecs);
@@ -297,6 +315,8 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
 	 header["NENERGIES"].set(m_energies.size());
 	 header["NTHBINS"].set(m_thetasun.size()-1);
 	 header["NBINS"].set((m_thetasun.size()-1)*m_energies.size());
+	 header["DISTTCUT"].set(180./M_PI*acos(m_distCosCut));
+	 header["AVGDIST"].set(m_avgDist);
    header["TELESCOP"].set("GLAST");
    header["INSTRUME"].set("LAT");
    header["DATE-OBS"].set("");

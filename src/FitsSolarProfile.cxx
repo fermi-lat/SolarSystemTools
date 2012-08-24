@@ -1,10 +1,21 @@
 /**
  * @file FitsSolarProfile.cxx
  * @brief Access to solar intensity as a function of angle and energy from a
- * FITS file compatible with Andy's solar IC tool
+ * FITS file.
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/FitsSolarProfile.cxx,v 1.2 2012/05/10 22:21:18 gudlaugu Exp $
+ * There should be 3 tables in the FITS file
+ * *Angles with a column called Angle giving the angle from the moving source
+ * in degrees
+ * *Energies with a column called Energy giving the energy bins of the profile
+ * in MeV
+ * *SST_PROFILE with a vector column called Profile where each row gives the
+ * angular distribution at a certain energy bin in units of photons/cm2/sr/s.  This 
+ * table should have a header keyword
+ * AVGDIST which gives the average distance to the source used for the profile
+ * in units of lightseconds.
+ * 
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/FitsSolarProfile.cxx,v 1.3 2012/06/10 13:15:52 gudlaugu Exp $
  */
 
 #include <string>
@@ -17,7 +28,8 @@
 
 namespace SolarSystemTools {
 
-	FitsSolarProfile::FitsSolarProfile(const std::string &filename) {
+	FitsSolarProfile::FitsSolarProfile(const std::string &filename) 
+	{
 
 		const tip::Table * table = tip::IFileSvc::instance().readTable(filename, "ANGLES");
 
@@ -41,22 +53,28 @@ namespace SolarSystemTools {
 
 		delete table;
 
-		table = tip::IFileSvc::instance().readTable(filename, "SPECTRUM_FOR_ANGLES_IC_DISC");
+		table = tip::IFileSvc::instance().readTable(filename, "SST_PROFILE");
 
 		m_profile.resize(m_costheta.size()*m_energies.size());
 
 		tip::Table::ConstIterator intit = table->begin();
 		size_t j(0);
 		for ( ; intit != table->end(); ++intit, ++j) {
+
+			std::vector<double> profile;
+			(*intit)["Profile"].get(profile);
+			
 			for ( size_t i = 0; i < m_costheta.size(); ++i) {
 				const size_t index = j*m_costheta.size() + i;
-				std::stringstream ss;
-				ss << "intensity_" << i+1;
-				double value;
-			  (*intit)[ss.str()].get(value);
-			  m_profile[index] = value;
+			  m_profile[index] = profile[i];
 			}
 		}
+
+		const tip::Header& hdr = table->getHeader();
+
+		double avgdist;
+		hdr["AVGDIST"].get(avgdist);
+		m_avgDist = avgdist;
 
 		delete table;
 	}

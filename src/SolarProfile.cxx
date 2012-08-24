@@ -3,7 +3,7 @@
  * @brief Virtual access class to solar profiles for the solar template class
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarProfile.cxx,v 1.2 2012/04/19 23:58:59 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarProfile.cxx,v 1.3 2012/04/26 15:03:22 gudlaugu Exp $
  */
 
 #include <vector>
@@ -11,6 +11,7 @@
 #include <functional>
 #include <stdexcept>
 #include <cmath>
+#include <iostream>
 
 #include "SolarSystemTools/SolarProfile.h"
 
@@ -20,11 +21,11 @@ namespace SolarSystemTools {
 
 		//Check to see that we are within range
 		if (costheta > m_costheta.front() || costheta < m_costheta.back()) {
-			throw std::runtime_error("Request for solar intensity at an angle that is outside the profile boundary");
+			throw std::runtime_error("SolarProfile: Request for intensity at an angle that is outside the profile boundary");
 			return 0;
 		}
 		if (energy < m_energies.front() || energy > m_energies.back()) {
-			throw std::runtime_error("Request for solar intensity at an energy that is outside the profile range");
+			throw std::runtime_error("SolarProfile: Request for intensity at an energy that is outside the profile range");
 			return 0;
 		}
 
@@ -61,7 +62,7 @@ namespace SolarSystemTools {
 		const double last = (*this)(costhmin, energy);
 
 		//Now loop over all the angles inbetween and do the integration
-		std::vector<double>::const_iterator it = std::lower_bound(m_costheta.begin(), m_costheta.end(), costhmax, std::greater<double>());
+		std::vector<double>::const_iterator it = std::upper_bound(m_costheta.begin(), m_costheta.end(), costhmax, std::greater<double>());
 		std::vector<double>::const_iterator end = std::upper_bound(m_costheta.begin(), m_costheta.end(), costhmin, std::greater<double>());
 		
 		double integ(0);
