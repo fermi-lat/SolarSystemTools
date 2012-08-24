@@ -3,7 +3,7 @@
  * @brief Implementation of ExposureSun class for use by the SolarSystemTools.
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/LikeExposureSun.cxx,v 1.2 2012/03/21 22:50:20 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/LikeExposureSun.cxx,v 1.3 2012/03/23 14:10:13 gudlaugu Exp $
  */
 
 #include <algorithm>
@@ -70,6 +70,7 @@ LikeExposureSun(double skybin, double costhetabin, double costhetabinSun,
    }
 }
 
+/*
 void LikeExposureSun::load(const tip::Table * scData, bool verbose) {
    st_stream::StreamFormatter formatter("LikeExposureSun", "load", 2);
    
@@ -160,6 +161,7 @@ void LikeExposureSun::load(const tip::Table * scData, bool verbose) {
       formatter.warn() << "!" << std::endl;
    }
 }
+*/
 
 void LikeExposureSun::writeFile(const std::string & outfile) const {
    std::string dataPath = 

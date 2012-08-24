@@ -3,7 +3,7 @@
  * @brief Implementation for ExposureCubeSun wrapper class of SolarSystemTools::Exposure
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.7 2012/05/02 17:49:27 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.8 2012/05/10 22:17:29 gudlaugu Exp $
  */
 
 #include <iomanip>
@@ -46,6 +46,9 @@ ExposureCubeSun::ExposureCubeSun(const ExposureCubeSun & other)
 		 m_gtis(other.m_gtis),
 		 m_timeCuts(other.m_timeCuts),
 		 m_source_dir(other.m_source_dir),
+		 m_distCosCut(other.m_distCosCut),
+		 m_timeDist(other.m_timeDist),
+		 m_time(other.m_time),
 		 m_body(other.m_body),
      m_hasPhiDependence(other.m_hasPhiDependence) {
    if (other.m_weightedExposure) {
@@ -83,11 +86,16 @@ ExposureCubeSun(double skybin, double costhetabin, double thetabin, double theta
      m_costhetabin(costhetabin), m_timeCuts(timeCuts), m_gtis(gtis),
      m_thetabin(thetabin), m_thetamax(thetamax), m_numIntervals(0), 
 		 m_source_dir(body), m_body(body),
+		 m_distCosCut(-1),
+		 m_timeDist(0), m_time(0),
      m_exposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax, powerbinsun,
                                                 std::cos(zenmax*M_PI/180.))),
      m_weightedExposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax, powerbinsun,
                                                 std::cos(zenmax*M_PI/180.)))
      {
+
+			 if (m_body == astro::SolarSystem::SUN)
+				 m_distCosCut = 0.99999048; // Cos(0.25)
    if (!gtis.empty()) {
       for (size_t i = 0; i < gtis.size(); i++) {
          if (i == 0 || gtis.at(i).first < m_tmin) {
@@ -169,30 +177,44 @@ void ExposureCubeSun::load(const tip::Table * scData, bool verbose) {
          row["ra_zenith"].get(ra_zenith);
          row["dec_zenith"].get(dec_zenith);
 
+				 // The position is for the start of the bin so not as accurate as I
+				 // would like.  It is difficult to do interpolation to next bin due to
+				 // the SAA passage.
 				 std::vector<double> position;
 				 row["sc_position"].get(position);
-				//Usa astro to calculate the direction to the sun at center of bin
+				 const CLHEP::Hep3Vector posvec(position[0]/1000., position[1]/1000., position[2]/1000.);
+
+				//Use astro to calculate the direction to the moving source at center of time bin
 				const double mjd = (start+stop)/2./86400. + s_mjd_missionStart;
-				astro::SkyDir scsun(m_source_dir.direction(mjd, CLHEP::Hep3Vector(position[0]/1000., position[1]/1000., position[2]/1000.)));
+				astro::SkyDir scsun(m_source_dir.direction(mjd, posvec));
+
+				// Scale the libetime with inverse distance to source.  Important for
+				// moon only but done for all.
+				static const double lightsecond(299792.458); // km
+			  const double distance = (astro::SolarSystem::vector(m_body, astro::SolarSystem::EARTH, mjd) - posvec/lightsecond).mag();
+				m_timeDist += distance*deltat*fraction;
+				m_time += deltat*fraction;
+				const double invDistSquared = 1./(distance*distance);
+
          double weight(livetime/(stop - start));
 
          if (CosineBinner2D::nphibins() == 0) {
             m_exposure->fill(astro::SkyDir(ra, dec), scsun, astro::SkyDir(ra_zenith, dec_zenith), 
-                 deltat*fraction);
+                 deltat*fraction, invDistSquared, m_distCosCut);
             m_weightedExposure->fill(astro::SkyDir(ra, dec),
 								                     scsun,
                                      astro::SkyDir(ra_zenith, dec_zenith), 
-                                     deltat*fraction*weight);
+                                     deltat*fraction*weight, invDistSquared, m_distCosCut);
          } else {
             m_exposure->fill_zenith(astro::SkyDir(ra, dec), astro::SkyDir(rax, decx),
 								        scsun,
                         astro::SkyDir(ra_zenith, dec_zenith), 
-                        deltat*fraction);
+                        deltat*fraction, invDistSquared, m_distCosCut);
             m_weightedExposure->fill_zenith(astro::SkyDir(ra, dec),
                                             astro::SkyDir(rax, decx),
 								                            scsun,
                                             astro::SkyDir(ra_zenith,dec_zenith),
-                                            deltat*fraction*weight);
+                                            deltat*fraction*weight, invDistSquared, m_distCosCut);
          }
          m_numIntervals++;
       }
@@ -200,6 +222,10 @@ void ExposureCubeSun::load(const tip::Table * scData, bool verbose) {
    if (verbose) {
       formatter.warn() << "!" << std::endl;
    }
+}
+
+double ExposureCubeSun::avgDist() const {
+	return m_timeDist/m_time;
 }
 
 astro::SolarSystem::Body ExposureCubeSun::stringToBody(const std::string& body) {
@@ -284,6 +310,11 @@ void ExposureCubeSun::readKeywords(const std::string &outfile, const std::string
 		 std::string body;
 		 header["SSBODY"].get(body);
 		 m_body = stringToBody(body);
+		 double distThetaCut;
+		 header["DISTTCUT"].get(distThetaCut);
+		 m_distCosCut = cos(distThetaCut*M_PI/180.);
+		 header["TIMEDIST"].get(m_timeDist);
+		 header["TIME"].get(m_time);
 
 		 delete outtable;
 }
@@ -294,6 +325,10 @@ void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::strin
 		 header["TSTART"].set(start);
 		 header["TSTOP"].set(stop);
 		 header["SSBODY"].set(bodyToString(m_body));
+		 header["DISTTCUT"].set(180./M_PI*acos(m_distCosCut));
+		 header["TIMEDIST"].set(m_timeDist);
+		 header["TIME"].set(m_time);
+		 header["AVGDIST"].set(avgDist());
 		 cuts.writeDssKeywords(header);
 		 delete outtable;
 }

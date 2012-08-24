@@ -4,7 +4,7 @@
  * from solar binned exposure and solar profile
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarTemplate.cxx,v 1.2 2012/03/21 22:50:20 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarTemplate.cxx,v 1.3 2012/05/02 17:49:27 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -153,12 +153,20 @@ void SolarTemplate::computeMap() {
 	   costhetasun[i] = cos(thetasun[i]);
 	 }
 
+	 const double distCosCut = m_expsun.distCosCut();
+	 const double ltavgDist = m_expsun.avgDist();
+	 const double profavgDist = m_profile.avgDist();
+	 const double distRatio = profavgDist*profavgDist/(ltavgDist*ltavgDist);
+
 	 //Create the average intensity as a function of energy and angle
 	 std::vector<double> intensityCache(m_energies.size()*(costhetasun.size()-1));
    for (unsigned int k = 0; k < m_energies.size(); k++) {
      for (int l = 0; l < costhetasun.size()-1; ++l) {
 			   const size_t cInd = k*(costhetasun.size()-1) + l;
          intensityCache[cInd] = m_profile.average(costhetasun[l+1], costhetasun[l], m_energies[k]);
+				 // Assume that distCosCut aligns with one of the bins.
+				 if ( 0.5*(costhetasun[l]+costhetasun[l+1]) > distCosCut )
+					 intensityCache[cInd] *= distRatio;
      }
 	 }
 

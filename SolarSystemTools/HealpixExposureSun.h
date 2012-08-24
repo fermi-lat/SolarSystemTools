@@ -4,7 +4,7 @@
  * integrations
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/HealpixExposureSun.h,v 1.2 2012/03/21 22:50:19 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/HealpixExposureSun.h,v 1.3 2012/03/23 14:10:11 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_HealpixExposureSun_h
@@ -82,6 +82,14 @@ public:
       return m_thetasun;
    }
 
+	 double distCosCut() const {
+		 return m_distCosCut;
+	 }
+
+	 double avgDist() const {
+		 return m_avgDist;
+	 }
+
    void setBoundaryFlag(bool enforce_boundaries) {
       m_enforce_boundaries = enforce_boundaries;
    }
@@ -135,6 +143,9 @@ private:
 
    double m_costhmin;
    double m_costhmax;
+
+	 double m_distCosCut;
+	 double m_avgDist;
 
    bool m_enforce_boundaries;
 

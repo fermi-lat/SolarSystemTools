@@ -3,7 +3,7 @@
 
     @author G. Johannesson
 
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.3 2012/03/21 22:50:19 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.4 2012/03/23 14:10:11 gudlaugu Exp $
 */
 #ifndef SolarSystemTools_EXPOSURE_SUN_H
 #define SolarSystemTools_EXPOSURE_SUN_H
@@ -30,7 +30,7 @@ namespace SolarSystemTools {
 
 It is a pixelated using Healpix binning, and the CosineBinner2D class
 
-$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.3 2012/03/21 22:50:19 gudlaugu Exp $
+$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureSun.h,v 1.4 2012/03/23 14:10:11 gudlaugu Exp $
 */
 
 class ExposureSun : public SkyExposure2D {
@@ -53,9 +53,10 @@ public:
 
     //! add a time interval at the given position
     virtual void fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, double deltat);
+    virtual void fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, double deltat, double invDistSquare, double distCosCut);
 
     //! add a time interval at the given position
-    virtual void fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, const astro::SkyDir& dirzenith, double deltat);
+    virtual void fill(const astro::SkyDir& dirz, const astro::SkyDir& dirsun, const astro::SkyDir& dirzenith, double deltat, double invDistSquare, double distCosCut);
 
     //! create object from the data file (FITS for now)
     ExposureSun(const std::string& inputfile, const std::string& tablename="ExposureSun");
@@ -98,7 +99,7 @@ public:
         @param fraction livetime fractio
     */
     virtual void fill_zenith(const astro::SkyDir& dirz,const astro::SkyDir& dirx, const astro::SkyDir& dirsun,
-        const astro::SkyDir& dirzenith, double deltat);
+        const astro::SkyDir& dirzenith, double deltat, double invDistSquare, double distCosCut);
 
 		ExposureSun& operator += (const ExposureSun &other);
 
