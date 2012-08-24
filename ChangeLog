@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Fri Aug 24 06:48:49 PDT 2012
+SolarSystemTools/src/makeSolarExposureCube
+
+Modified Files:
+	makeSolarExposureCube.cxx 
+Log Message:
+Added distance modulation to the solar system tools to account for eccentricity of the orbits.  Does not take into account distance variations in the extended solar emission.  Changed the format of the profiles from one value per column to storing the entire profile for each energy bin in an vector. Fixed a bug in the addition of solar ltcubes.
+    *
+------------------------------------------------------------
 User: gudlaugu  Fri Aug 24 06:48:48 PDT 2012
 SolarSystemTools/src
 
