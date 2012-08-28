@@ -3,7 +3,7 @@
  * @brief Application for creating binned exposure maps for moving sources
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/gtltsumsun/gtltsumsun.cxx,v 1.1 2012/02/15 03:03:52 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/gtltsumsun/gtltsumsun.cxx,v 1.1 2012/06/16 11:29:15 gudlaugu Exp $
  */
 
 #include <cstdlib>
@@ -135,17 +135,14 @@ void SumSunLivetime::run() {
 			 throw std::runtime_error(message.str());
 		 }
 
-		 double tvalue;
-		 const tip::Table * table(fileSvc.readTable(m_fileList.front(), "EXPOSURESUN"));
-		 table->getHeader()["TSTART"].get(tvalue);
-		 if (tvalue < tstart) {
-			 tstart = tvalue;
+		 const double start = other.tstart();
+		 const double stop = other.tstop();
+		 if (start < tstart) {
+			 tstart = start;
 		 }
-		 table->getHeader()["TSTOP"].get(tvalue);
-		 if (tvalue > tstop) {
-			 tstop = tvalue;
+		 if (stop > tstop) {
+			 tstop = stop;
 		 }
-		 delete table;
 		 //my_cuts.push_back(dataSubselector::Cuts(m_fileList.at(k), "EXPOSURESUN",
 			//		 false, true));
 	}
