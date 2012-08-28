@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Tue Aug 28 03:59:26 PDT 2012
+SolarSystemTools/src/gtltsumsun
+
+Modified Files:
+	gtltsumsun.cxx 
+Log Message:
+minor optimization in reading and writing solar ltcubes.
+    *
+------------------------------------------------------------
 User: gudlaugu  Tue Aug 28 03:59:25 PDT 2012
 SolarSystemTools/src
 
