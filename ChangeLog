@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: gudlaugu  Tue Aug 28 03:59:25 PDT 2012
+SolarSystemTools/src
+
+Modified Files:
+	ExposureCubeSun.cxx ExposureSun.cxx 
+Log Message:
+minor optimization in reading and writing solar ltcubes.
+    *
+------------------------------------------------------------
+User: gudlaugu  Tue Aug 28 03:59:25 PDT 2012
 SolarSystemTools/SolarSystemTools
 
 Modified Files:
