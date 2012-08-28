@@ -1,10 +1,11 @@
 /** @file release.notes
     @brief package dataSubselector
-    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.6 2012/06/10 13:16:52 gudlaugu Exp $
+    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.7 2012/06/16 11:31:10 gudlaugu Exp $
 
     @verbatim
     * EOH *
 
+ SolarSystemTools-01-01-00 28-Aug-2012 gudlaugu Implemented distance variations in solar system tools and modified the template FITS file structuve.
  SolarSystemTools-01-00-04 16-Jun-2012 gudlaugu Adding includes for compilation on rhel6-64
  SolarSystemTools-01-00-03 10-Jun-2012 gudlaugu Patch release for a typo in a table name
  SolarSystemTools-01-00-02 18-May-2012 gudlaugu Bug fix to make it compile on windows
