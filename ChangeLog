@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Tue Aug 28 03:59:25 PDT 2012
+SolarSystemTools/SolarSystemTools
+
+Modified Files:
+	ExposureCubeSun.h 
+Log Message:
+minor optimization in reading and writing solar ltcubes.
+    *
+------------------------------------------------------------
 User: gudlaugu  Fri Aug 24 06:48:49 PDT 2012
 SolarSystemTools/src/makeSolarExposureCube
 
