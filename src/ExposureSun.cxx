@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.10 2012/05/10 22:17:29 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.11 2012/08/24 13:48:48 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -340,10 +340,11 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
     {
 			std::vector<double> values((*haitor).size());
 			std::vector<unsigned int> indices((*haitor).size());
+			std::vector<size_t> index = (*haitor).indices();
 			size_t j(0);
 			for ( size_t i(0); i < (*haitor).size(); ++i) {
 				if ( (*haitor)[i] != 0 ) {
-					indices[j] = (*haitor).indices()[i];
+					indices[j] = index[i];
 					values[j] = (*haitor)[i];
 					++j;
 				}

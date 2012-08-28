@@ -3,7 +3,7 @@
  * @brief Exposure time hypercube.
  * @author G. Johannesson <gudlaugu@glast2.stanford.edu>
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.8 2012/05/10 22:21:17 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.9 2012/08/24 13:48:46 gudlaugu Exp $
  */
 
 #ifndef SolarSystemTools_ExposureCubeSun_h
@@ -35,7 +35,7 @@ namespace SolarSystemTools {
  *
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.8 2012/05/10 22:21:17 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/SolarSystemTools/ExposureCubeSun.h,v 1.9 2012/08/24 13:48:46 gudlaugu Exp $
  */
 
 class ExposureCubeSun {
@@ -47,6 +47,7 @@ public:
                     m_haveFile(false), m_fileName(""),
                     m_hasPhiDependence(false),
 										m_distCosCut(-1),
+										m_tstart(0), m_tstop(0),
 		   m_timeDist(0), m_time(0),
        m_timeCuts(std::vector<std::pair<double, double> >(0)),
        m_gtis(std::vector<std::pair<double, double> >(0))
@@ -168,6 +169,9 @@ public:
 	 double distCosCut() const { return m_distCosCut; }
 	 double avgDist() const;
 
+	 double tstart() const { return m_tstart; }
+	 double tstop() const { return m_tstop; }
+
    /// @brief Normally one would re-implement the
    /// map_tools::Exposure::write(...) member function from the base
    /// class, but it is not virtual, so we add this method instead to
@@ -219,7 +223,7 @@ private:
       const Aeff & m_aeff;
    };
 #endif
-	 void writeKeywords(const std::string &outfile, const std::string &extname, double start, double stop, const Likelihood::RoiCuts &cuts) const;
+	 void writeKeywords(const std::string &outfile, const std::string &extname, const Likelihood::RoiCuts &cuts) const;
 	 void readKeywords(const std::string &outfile, const std::string &extname);
    double m_costhetabin;
    double m_thetabin;
@@ -257,6 +261,8 @@ private:
 
    /// Maximum time to be considered given GTIs (MET s)
    double m_tmax;
+
+	 mutable double m_tstart, m_tstop;
 
    /// Number of FT2 intervals that have been loaded.
    tip::Index_t m_numIntervals;

@@ -3,7 +3,7 @@
  * @brief Implementation for ExposureCubeSun wrapper class of SolarSystemTools::Exposure
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.8 2012/05/10 22:17:29 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.9 2012/08/24 13:48:47 gudlaugu Exp $
  */
 
 #include <iomanip>
@@ -50,6 +50,8 @@ ExposureCubeSun::ExposureCubeSun(const ExposureCubeSun & other)
 		 m_timeDist(other.m_timeDist),
 		 m_time(other.m_time),
 		 m_body(other.m_body),
+		 m_tstart(other.m_tstart),
+		 m_tstop(other.m_tstop),
      m_hasPhiDependence(other.m_hasPhiDependence) {
    if (other.m_weightedExposure) {
       m_weightedExposure = new ExposureSun(*(other.m_weightedExposure));
@@ -87,7 +89,7 @@ ExposureCubeSun(double skybin, double costhetabin, double thetabin, double theta
      m_thetabin(thetabin), m_thetamax(thetamax), m_numIntervals(0), 
 		 m_source_dir(body), m_body(body),
 		 m_distCosCut(-1),
-		 m_timeDist(0), m_time(0),
+		 m_timeDist(0), m_time(0), m_tstart(0), m_tstop(0),
      m_exposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax, powerbinsun,
                                                 std::cos(zenmax*M_PI/180.))),
      m_weightedExposure(new ExposureSun(skybin, costhetabin, thetabin, thetamax, powerbinsun,
@@ -315,15 +317,17 @@ void ExposureCubeSun::readKeywords(const std::string &outfile, const std::string
 		 m_distCosCut = cos(distThetaCut*M_PI/180.);
 		 header["TIMEDIST"].get(m_timeDist);
 		 header["TIME"].get(m_time);
+		 header["TSTART"].get(m_tstart);
+		 header["TSTOP"].get(m_tstop);
 
 		 delete outtable;
 }
 
-void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::string &extname, double start, double stop, const Likelihood::RoiCuts &cuts) const {
+void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::string &extname, const Likelihood::RoiCuts &cuts) const {
 		 tip::Table * outtable(tip::IFileSvc::instance().editTable(outfile, extname));
 		 tip::Header & header(outtable->getHeader());
-		 header["TSTART"].set(start);
-		 header["TSTOP"].set(stop);
+		 header["TSTART"].set(m_tstart);
+		 header["TSTOP"].set(m_tstop);
 		 header["SSBODY"].set(bodyToString(m_body));
 		 header["DISTTCUT"].set(180./M_PI*acos(m_distCosCut));
 		 header["TIMEDIST"].set(m_timeDist);
@@ -335,13 +339,16 @@ void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::strin
 
 void ExposureCubeSun::writeFile(const std::string & outfile, double start, double stop, const Likelihood::RoiCuts &cuts) const {
 
+	 m_tstart = start;
+	 m_tstop = stop;
+
 	 std::string ext="EXPOSURESUN";
 	 m_exposure->write(outfile, ext);
-	 writeKeywords(outfile, ext, start, stop, cuts);
+	 writeKeywords(outfile, ext, cuts);
 
 	 ext = "WEIGHTED_EXPOSURESUN";
    m_weightedExposure->write(outfile, ext);
-	 writeKeywords(outfile, ext, start, stop, cuts);
+	 writeKeywords(outfile, ext, cuts);
 
    writeBins(outfile);
 
