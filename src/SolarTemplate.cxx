@@ -4,7 +4,7 @@
  * from solar binned exposure and solar profile
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarTemplate.cxx,v 1.3 2012/05/02 17:49:27 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/SolarTemplate.cxx,v 1.4 2012/08/24 13:48:48 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -195,6 +195,8 @@ void SolarTemplate::computeMap() {
 					 //Get the average expsoure for the energy and pixel
 					 const unsigned int indx = (k*m_naxes.at(1) + j)*m_naxes.at(0) + i;
 					 const double avgExp = m_avgexp(m_energies[k], dir.ra(), dir.dec());
+					 if (avgExp == 0)
+						 continue;
 					 //Integrate the solar angles
 	         const ProfFun f(costhetasun, m_energies, intensityCache, k);
 					 m_template.at(indx) = m_expsun.integrate(m_energies[k], dir.ra(), dir.dec(), f);
