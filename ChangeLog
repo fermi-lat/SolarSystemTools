@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Wed Aug 14 06:51:11 PDT 2013
+SolarSystemTools/src
+
+Modified Files:
+	SolarTemplate.cxx 
+Log Message:
+Now templates can be calculated for AIT projections
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-32-05, operation: add
 Package: SolarSystemTools
