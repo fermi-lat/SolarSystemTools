@@ -1,10 +1,11 @@
 /** @file release.notes
     @brief package dataSubselector
-    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.8 2012/08/28 11:01:24 gudlaugu Exp $
+    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.9 2012/08/30 20:04:09 gudlaugu Exp $
 
     @verbatim
     * EOH *
 
+ SolarSystemTools-01-01-02 14-Aug-2013 gudlaugu Bug fix in gtsuntemp
  SolarSystemTools-01-01-01 30-Aug-2012 gudlaugu Adding the parameter file for gtltsumsun
  SolarSystemTools-01-01-00 28-Aug-2012 gudlaugu Implemented distance variations in solar system tools and modified the template FITS file structuve.
  SolarSystemTools-01-00-04 16-Jun-2012 gudlaugu Adding includes for compilation on rhel6-64
