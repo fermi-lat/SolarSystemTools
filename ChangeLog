@@ -1,5 +1,47 @@
 ------------------------------------------------------------
 TAG
+Tag name: ScienceTools-10-00-01, operation: add
+Package: SolarSystemTools
+User: jchiang  Sun Feb 22 21:52:11 2015
+Files:
+  SolarSystemTools/SolarSystemToolsLib.py  1.1.1.1
+  SolarSystemTools/ChangeLog  1.96
+  SolarSystemTools/SConscript  1.13
+  SolarSystemTools/SolarSystemTools/ExposureSun.h  1.5
+  SolarSystemTools/SolarSystemTools/SolarProfile.h  1.2
+  SolarSystemTools/SolarSystemTools/BinnedExposureSun.h  1.4
+  SolarSystemTools/SolarSystemTools/ExposureCubeSun.h  1.10
+  SolarSystemTools/SolarSystemTools/Observation.h  1.1.1.1
+  SolarSystemTools/SolarSystemTools/FitsSolarProfile.h  1.1
+  SolarSystemTools/SolarSystemTools/SolarTemplate.h  1.1
+  SolarSystemTools/SolarSystemTools/CosineBinner2D.h  1.7
+  SolarSystemTools/SolarSystemTools/LikeExposureSun.h  1.1.1.1
+  SolarSystemTools/SolarSystemTools/HealpixExposureSun.h  1.4
+  SolarSystemTools/data/LivetimeCubeSunTemplate  1.2
+  SolarSystemTools/doc/release.notes  1.10
+  SolarSystemTools/pfiles/gtsuntemp.par  1.2
+  SolarSystemTools/pfiles/gtltsumsun.par  1.1
+  SolarSystemTools/pfiles/gtexphpsun.par  1.3
+  SolarSystemTools/pfiles/gtexpcubesun.par  1.1.1.1
+  SolarSystemTools/pfiles/gtltcubesun.par  1.5
+  SolarSystemTools/src/SolarTemplate.cxx  1.5
+  SolarSystemTools/src/LikeExposureSun.cxx  1.4
+  SolarSystemTools/src/SolarProfile.cxx  1.4
+  SolarSystemTools/src/HealpixExposureSun.cxx  1.5
+  SolarSystemTools/src/ExposureSun.cxx  1.12
+  SolarSystemTools/src/ExposureCubeSun.cxx  1.10
+  SolarSystemTools/src/CosineBinner2D.cxx  1.11
+  SolarSystemTools/src/BinnedExposureSun.cxx  1.4
+  SolarSystemTools/src/FitsSolarProfile.cxx  1.4
+  SolarSystemTools/src/gtexpcubesun/gtexpcubesun.cxx  1.1.1.1
+  SolarSystemTools/src/gtexphpsun/gtexphpsun.cxx  1.1
+  SolarSystemTools/src/gtltsumsun/gtltsumsun.cxx  1.2
+  SolarSystemTools/src/gtsuntemp/gtsuntemp.cxx  1.1
+  SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx  1.7
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: ScienceTools-10-00-00, operation: add
 Package: SolarSystemTools
 User: jchiang  Fri Feb 13 17:21:15 2015
