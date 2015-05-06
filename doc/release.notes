@@ -1,10 +1,11 @@
 /** @file release.notes
     @brief package dataSubselector
-    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.9 2012/08/30 20:04:09 gudlaugu Exp $
+    $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/doc/release.notes,v 1.10 2013/08/14 13:52:32 gudlaugu Exp $
 
     @verbatim
     * EOH *
 
+ SolarSystemTools-01-02-00 06-May-2015 gudlaugu Fixes for P8 event types.
  SolarSystemTools-01-01-02 14-Aug-2013 gudlaugu Bug fix in gtsuntemp
  SolarSystemTools-01-01-01 30-Aug-2012 gudlaugu Adding the parameter file for gtltsumsun
  SolarSystemTools-01-01-00 28-Aug-2012 gudlaugu Implemented distance variations in solar system tools and modified the template FITS file structuve.
