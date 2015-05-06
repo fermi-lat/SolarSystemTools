@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Wed May  6 05:33:43 PDT 2015
+SolarSystemTools
+
+Modified Files:
+	SConscript 
+Log Message:
+stag/GoGui_auto-tag
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-10-00-04, operation: add
 Package: SolarSystemTools
