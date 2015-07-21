@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: gudlaugu  Tue Jul 21 09:21:28 PDT 2015
+SolarSystemTools/src/makeSolarExposureCube
+
+Modified Files:
+	makeSolarExposureCube.cxx 
+Log Message:
+Fix for the new Pass 8 event types
+    *
+------------------------------------------------------------
+User: gudlaugu  Tue Jul 21 09:21:28 PDT 2015
 SolarSystemTools/src/gtexphpsun
 
 Modified Files:
