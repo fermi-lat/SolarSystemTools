@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: gudlaugu  Tue Jul 21 09:21:27 PDT 2015
+SolarSystemTools/pfiles
+
+Modified Files:
+	gtexphpsun.par gtsuntemp.par 
+Log Message:
+Fix for the new Pass 8 event types
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-10-00-05, operation: add
 Package: SolarSystemTools
