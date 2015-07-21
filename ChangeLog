@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: gudlaugu  Tue Jul 21 09:21:28 PDT 2015
+SolarSystemTools/src/gtexpcubesun
+
+Modified Files:
+	gtexpcubesun.cxx 
+Log Message:
+Fix for the new Pass 8 event types
+    *
+------------------------------------------------------------
+User: gudlaugu  Tue Jul 21 09:21:28 PDT 2015
 SolarSystemTools/src
 
 Modified Files:
