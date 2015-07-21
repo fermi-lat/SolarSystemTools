@@ -2,7 +2,7 @@
     @brief Implementation of class ExposureSun
 		@author G. Johannesson
     
-		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.11 2012/08/24 13:48:48 gudlaugu Exp $
+		$Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureSun.cxx,v 1.12 2012/08/28 10:59:25 gudlaugu Exp $
 */
 #include "SolarSystemTools/ExposureSun.h"
 #include "healpix/HealpixArrayIO.h"
@@ -331,6 +331,25 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
     tip::Index_t numrecs =  data().size() ;
     table.setNumRecords(numrecs);
 
+    // set the headers (TODO: do the comments, too)
+    tip::Header& hdr = table.getHeader();
+
+    hdr["PIXTYPE"].set("HEALPIX"); 
+    hdr["ORDERING"].set("NESTED"); 
+    hdr["COORDSYS"].set(data().healpix().galactic()? "GAL" : "EQU");
+    hdr["NSIDE"].set(data().healpix().nside()); 
+    hdr["FIRSTPIX"].set(0); 
+    hdr["LASTPIX"].set(data().size() - 1); 
+    hdr["THETABIN"].set(CosineBinner2D::thetaBinning());
+    hdr["NBINS"].set(CosineBinner2D::nbins()*CosineBinner2D::nbins2()*(CosineBinner2D::nphibins()+1));
+    hdr["NBRBINS"].set(CosineBinner2D::nbins());
+    hdr["COSMIN"].set(CosineBinner2D::cosmin());
+    hdr["NBRBINS2"].set(CosineBinner2D::nbins2());
+    hdr["COSMIN2"].set(CosineBinner2D::cosmin2());
+		hdr["POWER2"].set(CosineBinner2D::power2());
+    hdr["PHIBINS"].set(CosineBinner2D::nphibins());
+		hdr["ZENMAX"].set(acos(m_zcut)*180/M_PI);
+
     // get iterators for the Table and the HealpixArray
     tip::Table::Iterator itor = table.begin();
     healpix::HealpixArray<CosineBinner2D>::const_iterator haitor = data().begin();
@@ -354,25 +373,6 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
        (*itor)["Index"].set(indices);
        (*itor)["Values"].set(values);
     }
-
-    // set the headers (TODO: do the comments, too)
-    tip::Header& hdr = table.getHeader();
-
-    hdr["PIXTYPE"].set("HEALPIX"); 
-    hdr["ORDERING"].set("NESTED"); 
-    hdr["COORDSYS"].set(data().healpix().galactic()? "GAL" : "EQU");
-    hdr["NSIDE"].set(data().healpix().nside()); 
-    hdr["FIRSTPIX"].set(0); 
-    hdr["LASTPIX"].set(data().size() - 1); 
-    hdr["THETABIN"].set(CosineBinner2D::thetaBinning());
-    hdr["NBINS"].set(CosineBinner2D::nbins()*CosineBinner2D::nbins2()*(CosineBinner2D::nphibins()+1));
-    hdr["NBRBINS"].set(CosineBinner2D::nbins());
-    hdr["COSMIN"].set(CosineBinner2D::cosmin());
-    hdr["NBRBINS2"].set(CosineBinner2D::nbins2());
-    hdr["COSMIN2"].set(CosineBinner2D::cosmin2());
-		hdr["POWER2"].set(CosineBinner2D::power2());
-    hdr["PHIBINS"].set(CosineBinner2D::nphibins());
-		hdr["ZENMAX"].set(acos(m_zcut)*180/M_PI);
 
     // need to do this to ensure file is closed when pointer goes out of scope
     delete &table;

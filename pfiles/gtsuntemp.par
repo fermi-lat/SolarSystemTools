@@ -1,4 +1,4 @@
-# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/pfiles/gtsuntemp.par,v 1.1 2012/02/15 03:03:51 gudlaugu Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/pfiles/gtsuntemp.par,v 1.2 2012/05/10 22:21:17 gudlaugu Exp $
 #
 # General parameters.
 expsun,f,a,"",,,"Exposure binned in healpix and solar angles"
@@ -24,7 +24,8 @@ ebinfile,s,a,NONE,,,"Name of FITS file containing the energy bin definition"
 
 # Hidden parameters.
 bincalc,s,h,"EDGE",EDGE|CENTER,,"Energy values as bounds or logrithmic centers of energy bins"
-irfs,s,h,"P7SOURCE_V6",,,"Not really used, only by the apphelpers"
+irfs,s,h,"P8R2_CLEAN_V6",,,"Required by apphelpers, not used in the calculation"
+evtype,i,h,3,,,"Required by apphelpers, not used in the calculation"
 
 chatter,i,h,2,0,4,Output verbosity
 clobber,        b, h, yes, , , "Overwrite existing output files"
