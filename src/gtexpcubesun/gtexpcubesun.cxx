@@ -3,7 +3,7 @@
  * @brief Application for creating binned exposure maps for moving sources
  * @author G. Johannesson
  *
- * $Header: $
+ * $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/SolarSystemTools/src/gtexpcubesun/gtexpcubesun.cxx,v 1.1.1.1 2012/02/11 02:26:40 gudlaugu Exp $
  */
 
 #include <cmath>
@@ -53,6 +53,8 @@ private:
    void set_phi_status();
    void generateEnergies(std::vector<double> & energies) const;
    void copyGtis() const;
+   void copyHeaderKeywords() const;
+   void copyDssKeywords(tip::Header & header) const;
    static std::string s_cvs_id;
 };
 
@@ -195,4 +197,58 @@ void ExpCubeSun::copyGtis() const {
    dataSubselector::Gti gti(infile);
    std::string outfile = m_pars["outfile"];
    gti.writeExtension(outfile);
+}
+
+void ExpCubeSun::copyHeaderKeywords() const {
+   std::string infile = m_pars["infile"];
+   std::string inext("EXPOSURESUN");
+   const tip::Table * intab = 
+     tip::IFileSvc::instance().readTable(infile, inext);
+   const tip::Header & inheader(intab->getHeader());
+   
+   std::string outfile = m_pars["outfile"];
+   std::string outext("EXPOSURE");
+   tip::Table * outtab = 
+     tip::IFileSvc::instance().readTable(outfile, outext);
+   tip::Header & outheader(outtab->getHeader());
+
+   // Unfortunately TIP does not provide access to header comments, so
+   // we cannot copy them using it. Could use cfitsio directly but
+   // prefer TIP as it is standard here.
+
+#define COPYKEYWORD(type, name)			\
+   try {					\
+     type x;					\
+     inheader[name].get(x);			\
+     outheader[name].set(x);			\
+   } catch(...) {				\
+   }
+   
+   COPYKEYWORD(std::string, "DATE-OBS");
+   COPYKEYWORD(std::string, "DATE-END");
+   COPYKEYWORD(double,      "TSTART");
+   COPYKEYWORD(double,      "TSTOP");
+   COPYKEYWORD(double,      "MJDREFI");
+   COPYKEYWORD(double,      "MJDREFF");
+   COPYKEYWORD(std::string, "TIMEUNIT");
+   COPYKEYWORD(double,      "TIMEZERO");
+   COPYKEYWORD(std::string, "TIMESYS");
+   COPYKEYWORD(std::string, "TIMEREF");
+   COPYKEYWORD(bool,        "CLOCKAPP");
+   COPYKEYWORD(bool,        "GPS_OUT");
+
+#undef COPYKEYWORD
+
+   copyDssKeywords(outheader);
+
+   delete outtab;
+   delete intab;
+}
+
+void ExpCubeSun::copyDssKeywords(tip::Header & header) const {
+   dataSubselector::Cuts * irfs_cuts(0);
+   irfs_cuts = new dataSubselector::Cuts();
+   irfs_cuts->addVersionCut("IRF_VERSION", m_helper->irfsName());
+   irfs_cuts->writeDssKeywords(header);
+   delete irfs_cuts;
 }

@@ -3,7 +3,7 @@
  * @brief Implementation for ExposureCubeSun wrapper class of SolarSystemTools::Exposure
  * @author G. Johannesson
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.9 2012/08/24 13:48:47 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/ExposureCubeSun.cxx,v 1.10 2012/08/28 10:59:25 gudlaugu Exp $
  */
 
 #include <iomanip>
@@ -326,6 +326,7 @@ void ExposureCubeSun::readKeywords(const std::string &outfile, const std::string
 void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::string &extname, const Likelihood::RoiCuts &cuts) const {
 		 tip::Table * outtable(tip::IFileSvc::instance().editTable(outfile, extname));
 		 tip::Header & header(outtable->getHeader());
+		 cuts.writeDssTimeKeywords(header);
 		 header["TSTART"].set(m_tstart);
 		 header["TSTOP"].set(m_tstop);
 		 header["SSBODY"].set(bodyToString(m_body));
@@ -333,7 +334,6 @@ void ExposureCubeSun::writeKeywords(const std::string &outfile, const std::strin
 		 header["TIMEDIST"].set(m_timeDist);
 		 header["TIME"].set(m_time);
 		 header["AVGDIST"].set(avgDist());
-		 cuts.writeDssKeywords(header);
 		 delete outtable;
 }
 

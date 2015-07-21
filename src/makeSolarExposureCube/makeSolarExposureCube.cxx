@@ -3,7 +3,7 @@
  * @brief Create an Exposure hypercube including distance from solar center
  * @author G. Johannesson
  *
- *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.6 2012/06/16 11:29:15 gudlaugu Exp $
+ *  $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.7 2012/08/24 13:48:48 gudlaugu Exp $
  */
 
 #include <cstdlib>
@@ -69,7 +69,7 @@ namespace {
  *
  * @author J. Chiang
  *
- * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.6 2012/06/16 11:29:15 gudlaugu Exp $
+ * $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/src/makeSolarExposureCube/makeSolarExposureCube.cxx,v 1.7 2012/08/24 13:48:48 gudlaugu Exp $
  */
 class ExposureCubeSun : public st_app::StApp {
 public:
@@ -137,6 +137,8 @@ void ExposureCubeSun::run() {
    const double tstop(m_roiCuts->maxTime());
 
    m_exposure->writeFile(output_file, tstart, tstop, *m_roiCuts);
+
+	 writeDateKeywords(output_file, tstart, tstop);
 }
 
 void ExposureCubeSun::writeTableKeywords(const std::string & outfile,
@@ -240,6 +242,9 @@ void ExposureCubeSun::createDataCube() {
 	 double powerbin = m_pars["powerbinsun"];
 	 const double ratio = (1-costhsunmax)/(1-cos(0.25*M_PI/180.));
 	 unsigned int cosbins2 = static_cast<unsigned int>( pow( ratio, 1./powerbin) );
+	 // Need at least 2 bins for this to work
+	 if (cosbins2 < 2)
+		 ++cosbins2;
 	 powerbin = log(ratio)/log(static_cast<double>(cosbins2)) + 1e-10; //The small number is to make sure the rounding does not go the wrong way
 
    m_exposure = new SolarSystemTools::ExposureCubeSun(m_pars["binsz"], 

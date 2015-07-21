@@ -1,9 +1,10 @@
-# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/pfiles/gtexphpsun.par,v 1.2 2012/04/26 15:03:21 gudlaugu Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/SolarSystemTools/pfiles/gtexphpsun.par,v 1.3 2012/05/10 22:21:17 gudlaugu Exp $
 #
 # General parameters.
 infile,f,a,"",,,"Solar system tools livetime cube file"
 outfile,f,a,"",,,"Output file name"
-irfs,s,a,"P7SOURCE_V6",,,"Response functions to use"
+irfs,s,a,"CALDB",,,"Response functions to use"
+evtype,i,h,INDEF,,,"Event type selections"
 
 # Parameters for user-defined map.
 binsz,r,h,0,,,"Image scale (in degrees/pixel)"
