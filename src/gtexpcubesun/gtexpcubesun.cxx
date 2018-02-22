@@ -202,9 +202,9 @@ void ExpCubeSun::copyGtis() const {
 void ExpCubeSun::copyHeaderKeywords() const {
    std::string infile = m_pars["infile"];
    std::string inext("EXPOSURESUN");
-   const tip::Table * intab = 
+   tip::Table * intab = 
      tip::IFileSvc::instance().readTable(infile, inext);
-   const tip::Header & inheader(intab->getHeader());
+   tip::Header & inheader(intab->getHeader());
    
    std::string outfile = m_pars["outfile"];
    std::string outext("EXPOSURE");
