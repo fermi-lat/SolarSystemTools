@@ -208,7 +208,7 @@ void ExpCubeSun::copyHeaderKeywords() const {
    
    std::string outfile = m_pars["outfile"];
    std::string outext("EXPOSURE");
-   tip::Table * outtab = 
+   const tip::Table * outtab = 
      tip::IFileSvc::instance().readTable(outfile, outext);
    tip::Header & outheader(outtab->getHeader());
 
