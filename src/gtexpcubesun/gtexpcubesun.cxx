@@ -199,12 +199,12 @@ void ExpCubeSun::copyGtis() const {
    gti.writeExtension(outfile);
 }
 
-void ExpCubeSun::copyHeaderKeywords() const {
+void ExpCubeSun::copyHeaderKeywords() {
    std::string infile = m_pars["infile"];
    std::string inext("EXPOSURESUN");
-   tip::Table * intab = 
+   const tip::Table * intab = 
      tip::IFileSvc::instance().readTable(infile, inext);
-   tip::Header & inheader(intab->getHeader());
+   const tip::Header & inheader(intab->getHeader());
    
    std::string outfile = m_pars["outfile"];
    std::string outext("EXPOSURE");
