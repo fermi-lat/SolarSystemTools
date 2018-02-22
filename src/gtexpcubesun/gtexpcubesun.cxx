@@ -199,7 +199,7 @@ void ExpCubeSun::copyGtis() const {
    gti.writeExtension(outfile);
 }
 
-void ExpCubeSun::copyHeaderKeywords() {
+void ExpCubeSun::copyHeaderKeywords() const {
    std::string infile = m_pars["infile"];
    std::string inext("EXPOSURESUN");
    const tip::Table * intab = 
@@ -208,9 +208,9 @@ void ExpCubeSun::copyHeaderKeywords() {
    
    std::string outfile = m_pars["outfile"];
    std::string outext("EXPOSURE");
-   tip::Table * outtab = 
+   const tip::Table * outtab = 
      tip::IFileSvc::instance().readTable(outfile, outext);
-   tip::Header & outheader(outtab->getHeader());
+   const tip::Header & outheader(outtab->getHeader());
 
    // Unfortunately TIP does not provide access to header comments, so
    // we cannot copy them using it. Could use cfitsio directly but
