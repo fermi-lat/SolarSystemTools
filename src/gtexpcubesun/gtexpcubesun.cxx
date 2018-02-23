@@ -209,7 +209,7 @@ void ExpCubeSun::copyHeaderKeywords() const {
    std::string outfile = m_pars["outfile"];
    std::string outext("EXPOSURE");
    tip::Table * outtab = 
-     tip::IFileSvc::instance().readTable(outfile, outext);
+     const_cast<tip::Table *>(tip::IFileSvc::instance().readTable(outfile, outext));
    tip::Header & outheader(outtab->getHeader());
 
    // Unfortunately TIP does not provide access to header comments, so
