@@ -208,9 +208,9 @@ void ExpCubeSun::copyHeaderKeywords() const {
    
    std::string outfile = m_pars["outfile"];
    std::string outext("EXPOSURE");
-   const tip::Table * outtab = 
+   tip::Table * outtab = 
      tip::IFileSvc::instance().readTable(outfile, outext);
-   const tip::Header & outheader(outtab->getHeader());
+   tip::Header & outheader(outtab->getHeader());
 
    // Unfortunately TIP does not provide access to header comments, so
    // we cannot copy them using it. Could use cfitsio directly but
