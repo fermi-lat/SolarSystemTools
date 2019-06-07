@@ -240,8 +240,8 @@ private:
 
    bool m_hasPhiDependence;
 
-   const std::vector< std::pair<double, double> > & m_timeCuts;
-   const std::vector< std::pair<double, double> > & m_gtis;
+   const std::vector< std::pair<double, double> > m_timeCuts;
+   const std::vector< std::pair<double, double> > m_gtis;
 
 	 /// Start of mission in Julian date
 		static const double s_mjd_missionStart;
