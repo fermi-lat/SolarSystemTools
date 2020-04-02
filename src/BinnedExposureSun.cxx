@@ -102,7 +102,7 @@ BinnedExposureSun::BinnedExposureSun(const std::string & filename)
      m_enforce_boundaries(false) {
    m_proj = new astro::SkyProj(filename);
 
-   std::auto_ptr<const tip::Image> 
+   std::unique_ptr<const tip::Image> 
       image(tip::IFileSvc::instance().readImage(filename, ""));
 
    m_exposureMap.clear();
@@ -110,7 +110,7 @@ BinnedExposureSun::BinnedExposureSun(const std::string & filename)
 
    m_naxes = image->getImageDimensions();
 
-   std::auto_ptr<const tip::Table>
+   std::unique_ptr<const tip::Table>
       energies(tip::IFileSvc::instance().readTable(filename, "Energies"));
 
    m_energies.clear();
