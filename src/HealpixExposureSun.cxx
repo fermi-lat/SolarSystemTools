@@ -87,7 +87,7 @@ HealpixExposureSun::HealpixExposureSun(const std::string & filename)
 		 m_distCosCut(-1), m_avgDist(0),
      m_enforce_boundaries(false) {
 
-   std::auto_ptr<const tip::Table>
+   std::unique_ptr<const tip::Table>
       energies(tip::IFileSvc::instance().readTable(filename, "Energies"));
 
    m_energies.clear();
@@ -101,7 +101,7 @@ HealpixExposureSun::HealpixExposureSun(const std::string & filename)
 
 	 pixel::setStride(m_energies.size());
 
-   std::auto_ptr<const tip::Table>
+   std::unique_ptr<const tip::Table>
       thetasun(tip::IFileSvc::instance().readTable(filename, "thetasun"));
 
 	 m_thetasun.clear();

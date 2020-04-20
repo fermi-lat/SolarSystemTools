@@ -143,7 +143,7 @@ void ExposureCubeSun::run() {
 
 void ExposureCubeSun::writeTableKeywords(const std::string & outfile,
                                       const std::string & tablename) const {
-   std::auto_ptr<tip::Table> 
+   std::unique_ptr<tip::Table> 
       table(tip::IFileSvc::instance().editTable(outfile, tablename));
    m_roiCuts->writeDssTimeKeywords(table->getHeader());
    double tstart(m_roiCuts->minTime());
