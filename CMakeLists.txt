@@ -1,6 +1,6 @@
 ##### Library ######
 add_library(
-  SolarSystemTools STATIC
+  SolarSystemTools 
   src/BinnedExposureSun.cxx
   src/CosineBinner2D.cxx
   src/ExposureCubeSun.cxx
