@@ -31,6 +31,8 @@ target_include_directories(
 )
 
 ###### Executables ######
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 add_executable(gtltcubesun src/makeSolarExposureCube/makeSolarExposureCube.cxx)
 add_executable(gtltsumsun src/gtltsumsun/gtltsumsun.cxx)
 add_executable(gtexpcubesun src/gtexpcubesun/gtexpcubesun.cxx)
