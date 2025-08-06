@@ -27,7 +27,8 @@ bincalc,s,h,"EDGE",EDGE|CENTER,,"Energy values as bounds or logrithmic centers o
 irfs,s,h,"P8R2_CLEAN_V6",,,"Required by apphelpers, not used in the calculation"
 evtype,i,h,3,,,"Required by apphelpers, not used in the calculation"
 
-chatter,i,h,2,0,4,Output verbosity
+# Increased chatter from 2 to 3 to output tool version string.
+chatter,i,h,3,0,4,Output verbosity
 clobber,        b, h, yes, , , "Overwrite existing output files"
 debug,          b, h, no, , , "Activate debugging mode"
 mode,           s, h, "ql", , , "Mode of automatic parameters"
