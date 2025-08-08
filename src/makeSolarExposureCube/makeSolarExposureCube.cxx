@@ -30,6 +30,7 @@
 
 #include "SolarSystemTools/ExposureCubeSun.h"
 #include "Likelihood/RoiCuts.h"
+#include "general_util/generic_utils.h"
 
 namespace {
    void getTBounds(const std::vector< std::pair<double, double> > & gtis,
@@ -168,7 +169,9 @@ void ExposureCubeSun::writeDateKeywords(const std::string & outfile,
       tip::Extension * hdu(fileSvc.editExtension(outfile, *name));
       st_facilities::Util::writeDateKeywords(hdu, tstart, tstop, *name!="");
       if (*name == "") {
-         hdu->getHeader()["CREATOR"].set("gtltcubesun " + getVersion());
+         // Update CREATOR value with: Tool name/Group/Version
+         std::string creator_version =  GenericUtils::creator_banner("gtltcubesun");
+         hdu->getHeader()["CREATOR"].set(creator_version);
          std::string file_version = m_pars["file_version"];
          hdu->getHeader()["VERSION"].set(file_version);
       }

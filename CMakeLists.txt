@@ -23,6 +23,7 @@ target_link_libraries(
   irfLoader
   evtbin
   Likelihood
+  general_util
 )
 target_include_directories(
   SolarSystemTools PUBLIC
