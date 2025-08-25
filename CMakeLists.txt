@@ -31,6 +31,8 @@ target_include_directories(
 )
 
 ###### Executables ######
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 add_executable(gtltcubesun src/makeSolarExposureCube/makeSolarExposureCube.cxx)
 add_executable(gtltsumsun src/gtltsumsun/gtltsumsun.cxx)
 add_executable(gtexpcubesun src/gtexpcubesun/gtexpcubesun.cxx)
@@ -39,7 +41,7 @@ add_executable(gtsuntemp src/gtsuntemp/gtsuntemp.cxx)
 
 target_link_libraries(gtltcubesun PRIVATE SolarSystemTools)
 target_link_libraries(gtltsumsun PRIVATE SolarSystemTools)
-target_link_libraries(gtexpcubesun PRIVATE SolarSystemTools)
+target_link_libraries(gtexpcubesun PRIVATE SolarSystemTools CLHEP::VectorS)
 target_link_libraries(gtexphpsun PRIVATE SolarSystemTools)
 target_link_libraries(gtsuntemp PRIVATE SolarSystemTools)
 
