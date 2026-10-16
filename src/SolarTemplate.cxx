@@ -130,7 +130,7 @@ SolarTemplate::ProfFun::ProfFun(const std::vector<double> & costhsun,
 					       const std::vector<double> & cache, size_t ie ) :
 	m_costhsun(costhsun), m_energies(energies), m_cache(cache), m_ie(ie*(costhsun.size()-1)) {}
 
-double SolarTemplate::ProfFun::operator() (double costhetasun) const {
+auto SolarTemplate::ProfFun::operator() (double costhetasun) const -> double {
 	const std::vector<double>::const_iterator it = 
 		std::upper_bound(m_costhsun.begin(), m_costhsun.end(), costhetasun, std::greater<double>());
 	const size_t l = (it - m_costhsun.begin()) - 1;

@@ -32,11 +32,11 @@
 #include "SolarSystemTools/Observation.h"
 
 namespace {
-   inline double fracDiff(double target, double result) {
+   inline auto fracDiff(double target, double result) -> double {
       return std::fabs((target - result)/target);
    }
-   std::vector<double>::const_iterator 
-   findNearest(const std::vector<double> & xx, double x, double tol=1e-5) {
+   auto 
+   findNearest(const std::vector<double> & xx, double x, double tol=1e-5) -> std::vector<double>::const_iterator {
       std::vector<double>::const_iterator ix = std::find(xx.begin(),
                                                          xx.end(), x);
       if (ix == xx.end()) { // no exact match, so look for nearest
@@ -127,7 +127,7 @@ BinnedExposureSun::~BinnedExposureSun() {
    delete m_proj;
 }
 
-double BinnedExposureSun::operator()(double energy, double ra, double dec, double theta) const {
+auto BinnedExposureSun::operator()(double energy, double ra, double dec, double theta) const -> double {
    std::vector<double>::const_iterator ie = ::findNearest(m_energies, energy);
    unsigned int k = ie - m_energies.begin();
 
@@ -374,7 +374,7 @@ void BinnedExposureSun::setCosThetaBounds(const st_app::AppParGroup & pars) {
    }
 }
 
-double BinnedExposureSun::Aeff::operator()(double cosTheta, double phi) const {
+auto BinnedExposureSun::Aeff::operator()(double cosTheta, double phi) const -> double {
    if (cosTheta < m_costhmin || cosTheta > m_costhmax) {
       return 0;
    }

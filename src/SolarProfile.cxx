@@ -17,7 +17,7 @@
 
 namespace SolarSystemTools {
 
-	double SolarProfile::operator() (double costheta, double energy) const {
+	auto SolarProfile::operator() (double costheta, double energy) const -> double {
 
 		//Check to see that we are within range
 		if (costheta > m_costheta.front() || costheta < m_costheta.back()) {
@@ -55,7 +55,7 @@ namespace SolarSystemTools {
 	}
 
 
-	double SolarProfile::average(double costhmin, double costhmax, double energy) const {
+	auto SolarProfile::average(double costhmin, double costhmax, double energy) const -> double {
 		//Get the values at the boundaries first, throws an error if we are out of
 		//range
 		const double first = (*this)(costhmax, energy);

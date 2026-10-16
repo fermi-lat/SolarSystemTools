@@ -32,11 +32,11 @@
 #include "SolarSystemTools/Observation.h"
 
 namespace {
-   inline double fracDiff(double target, double result) {
+   inline auto fracDiff(double target, double result) -> double {
       return std::fabs((target - result)/target);
    }
-   std::vector<double>::const_iterator 
-   findNearest(const std::vector<double> & xx, double x, double tol=1e-5) {
+   auto 
+   findNearest(const std::vector<double> & xx, double x, double tol=1e-5) -> std::vector<double>::const_iterator {
       std::vector<double>::const_iterator ix = std::find(xx.begin(),
                                                          xx.end(), x);
       if (ix == xx.end()) { // no exact match, so look for nearest
@@ -163,7 +163,7 @@ HealpixExposureSun::HealpixExposureSun(const std::string & filename)
 
 }
 
-double HealpixExposureSun::integrate(double energy, double ra, double dec, const Fun &f) const {
+auto HealpixExposureSun::integrate(double energy, double ra, double dec, const Fun &f) const -> double {
    std::vector<double>::const_iterator ie = ::findNearest(m_energies, energy);
    unsigned int k = ie - m_energies.begin();
 
@@ -182,7 +182,7 @@ double HealpixExposureSun::integrate(double energy, double ra, double dec, const
 	 return integ;
 }
 
-double HealpixExposureSun::operator()(double energy, double ra, double dec, double theta) const {
+auto HealpixExposureSun::operator()(double energy, double ra, double dec, double theta) const -> double {
 
 	// Check for theta out of bounds
 	 if (m_thetasun[m_thetasun.size()-1] < theta) return 0;
@@ -206,7 +206,7 @@ double HealpixExposureSun::operator()(double energy, double ra, double dec, doub
 /// return the closest power of 2 for the side parameter
 /// 41252 square degrees for the sphere
 /// nside=64 is about one degee: 49152 pixels
-inline int side_from_degrees(double pixelsize){ 
+inline auto side_from_degrees(double pixelsize) -> int{ 
     int n = 1;
     while( 12*n*n < 41252/(pixelsize*pixelsize) && n < 512){
         n *=2;
@@ -373,7 +373,7 @@ size_t HealpixExposureSun::pixel::m_stride(1);
 
 void HealpixExposureSun::pixel::setStride(size_t stride) {m_stride = stride;}
 
-float & HealpixExposureSun::pixel::value(size_t i) {
+auto HealpixExposureSun::pixel::value(size_t i) -> float & {
 	const size_t ifake = i / m_stride;
 	pixelIndex::iterator it = std::lower_bound(m_ifaketoreal.begin(), m_ifaketoreal.end(), std::pair<size_t,size_t>(ifake,0), less_than);
 
@@ -392,7 +392,7 @@ float & HealpixExposureSun::pixel::value(size_t i) {
 	return at(i + (ireal - ifake)*m_stride);
 }
 
-float HealpixExposureSun::pixel::value(size_t i) const {
+auto HealpixExposureSun::pixel::value(size_t i) const -> float {
 	const size_t ifake = i / m_stride;
 	pixelIndex::const_iterator it = std::lower_bound(m_ifaketoreal.begin(), m_ifaketoreal.end(), std::pair<size_t,size_t>(ifake,0), less_than);
 
@@ -403,7 +403,7 @@ float HealpixExposureSun::pixel::value(size_t i) const {
 	return at(i + (ireal - ifake)*m_stride);
 }
 
-std::vector<size_t> HealpixExposureSun::pixel::indices() const {
+auto HealpixExposureSun::pixel::indices() const -> std::vector<size_t> {
 	std::vector<size_t> indices(size());
 	for (size_t i = 0; i < m_irealtofake.size(); ++i) {
 		const size_t irealstride = m_irealtofake[i].second*m_stride;
@@ -414,7 +414,7 @@ std::vector<size_t> HealpixExposureSun::pixel::indices() const {
 	return indices;
 }
 
-std::vector<size_t> HealpixExposureSun::pixel::sparseIndices() const {
+auto HealpixExposureSun::pixel::sparseIndices() const -> std::vector<size_t> {
 	std::vector<size_t> indices(m_irealtofake.size());
 	for (size_t i = 0; i < m_irealtofake.size(); ++i) {
 		indices[i] = m_irealtofake[i].second;

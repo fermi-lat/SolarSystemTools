@@ -104,7 +104,7 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
 /// return the closest power of 2 for the side parameter
 /// 41252 square degrees for the sphere
 /// nside=64 is about one degee: 49152 pixels
-inline int side_from_degrees(double pixelsize){ 
+inline auto side_from_degrees(double pixelsize) -> int{ 
     int n = 1;
     while( 12*n*n < 41252/(pixelsize*pixelsize) && n < 512){
         n *=2;
@@ -145,7 +145,7 @@ void ExposureSun::create_cache()
     }
 }
 
-bool ExposureSun::hasCosthetasun(const astro::SkyDir & dir, double costhetasun) const {
+auto ExposureSun::hasCosthetasun(const astro::SkyDir & dir, double costhetasun) const -> bool {
 	return data()[dir].hasCostheta2(costhetasun);
 }
 
@@ -221,8 +221,8 @@ public:
             m_lost += m_deltat;
         }
     }
-    double total()const{return m_total;}
-    double lost()const{return m_lost;}
+    auto total()const -> double{return m_total;}
+    auto lost()const -> double{return m_lost;}
 private:
     Simple3Vector m_dirz, m_dirsun;
     CLHEP::HepRotation m_rot;
@@ -378,7 +378,7 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
     delete &table;
 }
 
-ExposureSun& ExposureSun::operator += (const ExposureSun &other) {
+auto ExposureSun::operator += (const ExposureSun &other) -> ExposureSun& {
 	//Make sure the sizes agree
 	if ( data().size() != other.data().size() )
 		throw std::runtime_error("ExposureSun::operator+=: sizes don't match");

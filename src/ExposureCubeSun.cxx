@@ -24,12 +24,12 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace {
-   bool compareFirst(const std::pair<double, double> & a, 
-                     const std::pair<double, double> & b) {
+   auto compareFirst(const std::pair<double, double> & a, 
+                     const std::pair<double, double> & b) -> bool {
       return a.first < b.first;
    }
-   bool compareSecond(const std::pair<double, double> & a, 
-                      const std::pair<double, double> & b) {
+   auto compareSecond(const std::pair<double, double> & a, 
+                      const std::pair<double, double> & b) -> bool {
       return a.second < b.second;
    }
 }
@@ -226,11 +226,11 @@ void ExposureCubeSun::load(const tip::Table * scData, bool verbose) {
    }
 }
 
-double ExposureCubeSun::avgDist() const {
+auto ExposureCubeSun::avgDist() const -> double {
 	return m_timeDist/m_time;
 }
 
-astro::SolarSystem::Body ExposureCubeSun::stringToBody(const std::string& body) {
+auto ExposureCubeSun::stringToBody(const std::string& body) -> astro::SolarSystem::Body {
 
 	//Create an uppercase version
 	std::string bodyUpper(body);
@@ -263,7 +263,7 @@ astro::SolarSystem::Body ExposureCubeSun::stringToBody(const std::string& body) 
 
 }
 
-std::string ExposureCubeSun::bodyToString(astro::SolarSystem::Body body) {
+auto ExposureCubeSun::bodyToString(astro::SolarSystem::Body body) -> std::string {
 	std::string output;
 	
 	switch (body) {
@@ -395,11 +395,11 @@ void ExposureCubeSun::writeBins(const std::string & outfile) const {
    delete table;
 }
    
-bool ExposureCubeSun::
+auto ExposureCubeSun::
 acceptInterval(double start, double stop, 
                const std::vector< std::pair<double, double> > & timeCuts,
                const std::vector< std::pair<double, double> > & gtis,
-               double & fraction) {
+               double & fraction) -> bool {
    if (stop < start) {
       std::ostringstream message;
       message << "FT2 files has an interval with START > STOP:\n START = "
@@ -453,9 +453,9 @@ acceptInterval(double start, double stop,
    return true;
 }
 
-bool ExposureCubeSun::
+auto ExposureCubeSun::
 overlaps(const std::pair<double, double> & interval1,
-         std::pair<double, double> & interval2) {
+         std::pair<double, double> & interval2) -> bool {
    double start = std::max(interval1.first, interval2.first);
    double stop = std::min(interval1.second, interval2.second);
    if (start < stop) {
@@ -466,9 +466,9 @@ overlaps(const std::pair<double, double> & interval1,
    return false;
 }
 
-double ExposureCubeSun::
+auto ExposureCubeSun::
 overlap(const std::pair<double, double> & interval1,
-        const std::pair<double, double> & interval2) {
+        const std::pair<double, double> & interval2) -> double {
    double start = std::max(interval1.first, interval2.first);
    double stop = std::min(interval1.second, interval2.second);
    if (start < stop) {
@@ -494,12 +494,12 @@ computeBins(std::vector<double> & mubounds, std::vector<double> &thbounds) const
 	thetaBinsSun(thbounds);
 }
 
-double ExposureCubeSun::livetime(const astro::SkyDir & dir,
-                              double costheta, double thetasun, double phi) const {
+auto ExposureCubeSun::livetime(const astro::SkyDir & dir,
+                              double costheta, double thetasun, double phi) const -> double {
    return m_exposure->data()[dir](costheta, thetasun, phi);
 }
 
-ExposureCubeSun& ExposureCubeSun::operator += (const ExposureCubeSun &other) {
+auto ExposureCubeSun::operator += (const ExposureCubeSun &other) -> ExposureCubeSun& {
 	//Check that the bodies match
 	if (m_body != other.m_body)
 		throw(std::runtime_error("ExposureCubeSun::operator +=: bodies don't match"));
@@ -517,7 +517,7 @@ thetaBinsSun(std::vector<double> &thSunbounds) const {
 	}
 }
 
-bool ExposureCubeSun::phiDependence(const std::string & filename) const {
+auto ExposureCubeSun::phiDependence(const std::string & filename) const -> bool {
    const tip::Table * table 
       = tip::IFileSvc::instance().readTable(filename, "EXPOSURESUN");
    const tip::Header & header(table->getHeader());
@@ -544,7 +544,7 @@ ExposureCubeSun::Aeff::Aeff(double energy,
    }
 }
 
-double ExposureCubeSun::Aeff::operator()(double cosTheta, double phi) const {
+auto ExposureCubeSun::Aeff::operator()(double cosTheta, double phi) const -> double {
    double inclination = acos(cosTheta)*180./M_PI;
 // Check if we need to truncate the inclination past 70 deg as in 
 // MeanPsf::Aeff::operator()(...)

@@ -29,13 +29,13 @@ bool   CosineBinner2D::s_sqrt_weight=true;
 size_t CosineBinner2D::s_phibins=0;
 double CosineBinner2D::s_power2=3.;
 
-size_t CosineBinner2D::nphibins(){return s_phibins;}
+auto CosineBinner2D::nphibins() -> size_t{return s_phibins;}
 void   CosineBinner2D::setPhiBins(size_t n){s_phibins=n;}
-double CosineBinner2D::cosmin() { return s_cosmin;}
-double CosineBinner2D::cosmin2() { return s_cosmin2;}
-double CosineBinner2D::power2() { return s_power2;}
-size_t CosineBinner2D::nbins() {return s_nbins;}
-size_t CosineBinner2D::nbins2() {return s_nbins2;}
+auto CosineBinner2D::cosmin() -> double { return s_cosmin;}
+auto CosineBinner2D::cosmin2() -> double { return s_cosmin2;}
+auto CosineBinner2D::power2() -> double { return s_power2;}
+auto CosineBinner2D::nbins() -> size_t {return s_nbins;}
+auto CosineBinner2D::nbins2() -> size_t {return s_nbins2;}
 
 void CosineBinner2D::cosThetaBins(std::vector<double> &costheta)
 {
@@ -67,31 +67,31 @@ void CosineBinner2D::phiBins(std::vector<double> &phi)
 	}
 }
 
-size_t CosineBinner2D::cosine_index(double costheta)
+auto CosineBinner2D::cosine_index(double costheta) -> size_t
 {
     double f ( (1.-costheta)/(1-s_cosmin) );
     if(s_sqrt_weight) f=sqrt(f);
     const size_t i = static_cast<size_t>(f*s_nbins);
     return i<s_nbins-1 ? i : s_nbins-1;
 }
-size_t CosineBinner2D::costheta2_index(double costheta2)
+auto CosineBinner2D::costheta2_index(double costheta2) -> size_t
 {
 		double f ( (1.-costheta2)/(1-s_cosmin2) );
 		f = pow(f,1./s_power2);
 		const size_t i = static_cast<size_t>(f*s_nbins2);
 		return i<s_nbins2-1 ? i : s_nbins2-1;
 }
-double CosineBinner2D::folded_phi(double phi)
+auto CosineBinner2D::folded_phi(double phi) -> double
 {
     if( phi<0) phi+= 2*M_PI;
     return  1.- fabs(pi4-fmod(phi, pi2) )/pi4 ;
 }
-size_t CosineBinner2D::phi_index(double phi)
+auto CosineBinner2D::phi_index(double phi) -> size_t
 {
    if ( phi < -2*M_PI ) return 0;
    return static_cast<size_t>(folded_phi(phi)*s_phibins+1);
 }
-size_t CosineBinner2D::index(double costheta, double costheta2, double phi)
+auto CosineBinner2D::index(double costheta, double costheta2, double phi) -> size_t
 {
 	const size_t i1 = cosine_index(costheta);
 	const size_t i2 = costheta2_index(costheta2);
@@ -105,7 +105,7 @@ CosineBinner2D::CosineBinner2D()
     //resize(s_phibins==0? s_nbins*s_nbins2: s_nbins*s_nbins2*(1+s_phibins) );
 }
 
-std::vector<size_t> CosineBinner2D::indices() const {
+auto CosineBinner2D::indices() const -> std::vector<size_t> {
 	std::vector<size_t> out(m_itoicostheta2.size()*s_nbins*(s_phibins+1));
 
 	for (size_t i = 0; i < m_itoicostheta2.size(); ++i) {
@@ -117,15 +117,15 @@ std::vector<size_t> CosineBinner2D::indices() const {
 	return out;
 }
 
-std::vector<std::pair<size_t,size_t> >::iterator CosineBinner2D::icostheta2toi(size_t icostheta2){
+auto CosineBinner2D::icostheta2toi(size_t icostheta2) -> std::vector<std::pair<size_t,size_t> >::iterator{
 	return std::lower_bound(m_icostheta2toi.begin(), m_icostheta2toi.end(), std::pair<size_t,size_t>(icostheta2,size_t(0)), less_than);
 }
 
-std::vector<std::pair<size_t,size_t> >::const_iterator CosineBinner2D::icostheta2toi(size_t icostheta2) const{
+auto CosineBinner2D::icostheta2toi(size_t icostheta2) const -> std::vector<std::pair<size_t,size_t> >::const_iterator{
 	return std::lower_bound(m_icostheta2toi.begin(), m_icostheta2toi.end(), std::pair<size_t,size_t>(icostheta2,size_t(0)), less_than);
 }
 
-std::vector<std::pair<size_t,size_t> >::const_iterator CosineBinner2D::itoicostheta2(size_t i) const{
+auto CosineBinner2D::itoicostheta2(size_t i) const -> std::vector<std::pair<size_t,size_t> >::const_iterator{
 	return std::lower_bound(m_itoicostheta2.begin(), m_itoicostheta2.end(), std::pair<size_t,size_t>(i,size_t(0)), less_than);
 }
 
@@ -144,19 +144,19 @@ void CosineBinner2D::fill(double costheta, double costheta2, double phi, double 
     (*this)(costheta,costheta2,phi) += value;
 }
 
-double& CosineBinner2D::operator()(double costheta, double costheta2, double phi)
+auto CosineBinner2D::operator()(double costheta, double costheta2, double phi) -> double&
 {
 	const size_t i = index(costheta, costheta2, phi);
 	return value(i);
 }
 
-double CosineBinner2D::operator()(double costheta, double costheta2, double phi)const
+auto CosineBinner2D::operator()(double costheta, double costheta2, double phi)const -> double
 {
 	const size_t i = index(costheta, costheta2, phi);
 	return value(i);
 }
 
-double & CosineBinner2D::value (size_t i) {
+auto CosineBinner2D::value (size_t i) -> double & {
    const size_t icostheta2 = i / ( s_nbins*(s_phibins+1) );
 
 	 const size_t i2 = findI2orAdd(icostheta2);
@@ -164,7 +164,7 @@ double & CosineBinner2D::value (size_t i) {
    return (*this)[i + (i2 - icostheta2)*s_nbins*(s_phibins+1)];
 }
 
-double CosineBinner2D::value (size_t i) const{
+auto CosineBinner2D::value (size_t i) const -> double{
    const size_t icostheta2 = i / ( s_nbins*(s_phibins+1) );
    std::vector<std::pair<size_t,size_t> >::const_iterator it = icostheta2toi(icostheta2);
 
@@ -174,7 +174,7 @@ double CosineBinner2D::value (size_t i) const{
    return (*this)[i + (it->second - icostheta2)*s_nbins*(s_phibins+1)];
 }
 
-bool CosineBinner2D::hasCostheta2 ( double costheta ) const {
+auto CosineBinner2D::hasCostheta2 ( double costheta ) const -> bool {
 	const size_t icostheta2 = costheta2_index(costheta);
    std::vector<std::pair<size_t,size_t> >::const_iterator it = icostheta2toi(icostheta2);
 
@@ -182,7 +182,7 @@ bool CosineBinner2D::hasCostheta2 ( double costheta ) const {
 	 return true;
 }
 
-CosineBinner2D& CosineBinner2D::operator += (const CosineBinner2D &other) {
+auto CosineBinner2D::operator += (const CosineBinner2D &other) -> CosineBinner2D& {
 	//If the pixel to be added is zero sized, nothing needs to be done
 	if (other.m_icostheta2toi.size() == 0)
 		return *this;
@@ -234,7 +234,7 @@ void CosineBinner2D::setValues(const std::vector<size_t> &indices, const std::ve
 
 }
 
-size_t CosineBinner2D::findI2orAdd(size_t icostheta2) {
+auto CosineBinner2D::findI2orAdd(size_t icostheta2) -> size_t {
 		//Find or add icostheta2 to the binner
 		std::vector<std::pair<size_t,size_t> >::iterator it2 = icostheta2toi(icostheta2);
 
@@ -261,7 +261,7 @@ size_t CosineBinner2D::findI2orAdd(size_t icostheta2) {
 }
 
 
-size_t CosineBinner2D::index(const CosineBinner2D::const_iterator &i) const
+auto CosineBinner2D::index(const CosineBinner2D::const_iterator &i) const -> size_t
 {
 	const size_t ind = i - begin();
 	const size_t icostheta2array = ind / (s_nbins*(s_phibins+1));
@@ -270,7 +270,7 @@ size_t CosineBinner2D::index(const CosineBinner2D::const_iterator &i) const
 }
 
 /// cos(theta1) for the iterator
-double CosineBinner2D::costheta(const CosineBinner2D::const_iterator &i)const
+auto CosineBinner2D::costheta(const CosineBinner2D::const_iterator &i)const -> double
 {
 	  const size_t ind = i - begin();
     const size_t bin = ( ind % ( s_nbins*(s_phibins+1) ) ) % s_nbins ;
@@ -279,7 +279,7 @@ double CosineBinner2D::costheta(const CosineBinner2D::const_iterator &i)const
     return 1. - f*(1-s_cosmin); 
 }
 /// cos(theta2) for the iterator
-double CosineBinner2D::costheta2(const CosineBinner2D::const_iterator &i)const
+auto CosineBinner2D::costheta2(const CosineBinner2D::const_iterator &i)const -> double
 {
 	  const size_t ind = i - begin();
 	  const size_t icostheta2array = ind / (s_nbins*(s_phibins+1));
@@ -289,7 +289,7 @@ double CosineBinner2D::costheta2(const CosineBinner2D::const_iterator &i)const
     return 1. - f*(1-s_cosmin2); 
 }
 /// phi for the iterator: note only 0-pi/4 (0-45 degrees)
-double CosineBinner2D::phi(const CosineBinner2D::const_iterator &i)const
+auto CosineBinner2D::phi(const CosineBinner2D::const_iterator &i)const -> double
 {
 	  const size_t ind = i - begin();
     const size_t bin = ( ind % ( s_nbins*(s_phibins+1) ) ) / s_nbins;
@@ -299,7 +299,7 @@ double CosineBinner2D::phi(const CosineBinner2D::const_iterator &i)const
 }
 
 
-std::string CosineBinner2D::thetaBinning(){ 
+auto CosineBinner2D::thetaBinning() -> std::string{ 
     if( s_sqrt_weight) {
         return "SQRT(1-COSTHETA)";
     }else{
