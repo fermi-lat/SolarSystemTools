@@ -45,7 +45,7 @@ public:
    virtual void run();
    virtual void banner() const;
 private:
-	 Likelihood::AppHelpers * m_helper;
+	 Likelihood::AppHelpers * m_helper{nullptr};
    st_app::AppParGroup & m_pars;
    double m_srRadius;
    void promptForParameters();
@@ -61,7 +61,7 @@ st_app::StAppFactory<ExpHpSun> myAppFactory("gtexphpsun");
 
 std::string ExpHpSun::s_cvs_id("$Name:  $");
 
-ExpHpSun::ExpHpSun() : st_app::StApp(), m_helper(0), 
+ExpHpSun::ExpHpSun() : st_app::StApp(), m_helper(0),
                      m_pars(st_app::StApp::getParGroup("gtexphpsun")) {
    setVersion(s_cvs_id);
 }
@@ -158,7 +158,7 @@ void ExpHpSun::set_phi_status() {
    bool ignorephi = m_pars["ignorephi"];
    if (ignorephi) {
       const Likelihood::Observation & observation(m_helper->observation());
-      std::map<unsigned int, irfInterface::Irfs *>::const_iterator respIt 
+      auto respIt 
          = observation.respFuncs().begin();
       for ( ; respIt != observation.respFuncs().end(); ++respIt) {
          respIt->second->aeff()->setPhiDependence(false);
@@ -220,7 +220,7 @@ void ExpHpSun::copyHeaderKeywords() const {
 
 void ExpHpSun::copyDssKeywords(tip::Header & header) const {
    std::string cmap_file = m_pars["cmap"];
-   dataSubselector::Cuts * irfs_cuts(0);
+   dataSubselector::Cuts * irfs_cuts(nullptr);
    if (cmap_file == "none") {
       // No DSS keywords to copy from input files, so just write
       // selected irfs.

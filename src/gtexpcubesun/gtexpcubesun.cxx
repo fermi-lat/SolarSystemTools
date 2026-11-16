@@ -46,7 +46,7 @@ public:
    virtual void run();
    virtual void banner() const;
 private:
-	 Likelihood::AppHelpers * m_helper;
+	 Likelihood::AppHelpers * m_helper{nullptr};
    st_app::AppParGroup & m_pars;
    double m_srRadius;
    void promptForParameters();
@@ -62,7 +62,7 @@ st_app::StAppFactory<ExpCubeSun> myAppFactory("gtexpcubesun");
 
 std::string ExpCubeSun::s_cvs_id("$Name:  $");
 
-ExpCubeSun::ExpCubeSun() : st_app::StApp(), m_helper(0), 
+ExpCubeSun::ExpCubeSun() : st_app::StApp(), m_helper(0),
                      m_pars(st_app::StApp::getParGroup("gtexpcubesun")) {
    setVersion(s_cvs_id);
 }
@@ -184,7 +184,7 @@ void ExpCubeSun::set_phi_status() {
    bool ignorephi = m_pars["ignorephi"];
    if (ignorephi) {
       const Likelihood::Observation & observation(m_helper->observation());
-      std::map<unsigned int, irfInterface::Irfs *>::const_iterator respIt 
+      auto respIt 
          = observation.respFuncs().begin();
       for ( ; respIt != observation.respFuncs().end(); ++respIt) {
          respIt->second->aeff()->setPhiDependence(false);
@@ -246,7 +246,7 @@ void ExpCubeSun::copyHeaderKeywords() const {
 }
 
 void ExpCubeSun::copyDssKeywords(tip::Header & header) const {
-   dataSubselector::Cuts * irfs_cuts(0);
+   dataSubselector::Cuts * irfs_cuts(nullptr);
    irfs_cuts = new dataSubselector::Cuts();
    irfs_cuts->addVersionCut("IRF_VERSION", m_helper->irfsName());
    irfs_cuts->writeDssKeywords(header);

@@ -49,7 +49,7 @@ public:
    virtual void run();
    virtual void banner() const;
 private:
-	 Likelihood::AppHelpers * m_helper;
+	 Likelihood::AppHelpers * m_helper{nullptr};
    st_app::AppParGroup & m_pars;
    double m_srRadius;
    void promptForParameters();
@@ -62,7 +62,7 @@ st_app::StAppFactory<SunTemplate> myAppFactory("gtsuntemp");
 
 std::string SunTemplate::s_cvs_id("$Name:  $");
 
-SunTemplate::SunTemplate() : st_app::StApp(), m_helper(0), 
+SunTemplate::SunTemplate() : st_app::StApp(), m_helper(0),
                      m_pars(st_app::StApp::getParGroup("gtsuntemp")) {
    setVersion(s_cvs_id);
 }

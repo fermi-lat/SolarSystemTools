@@ -30,10 +30,10 @@ namespace SolarSystemTools {
 		}
 
 		//Do interpolation in angle (linear in costheta) and energy (powerlaw)
-		const std::vector<double>::const_iterator th_it = std::upper_bound(m_costheta.begin(), m_costheta.end(), costheta, std::greater<double>());
+		const auto th_it = std::upper_bound(m_costheta.begin(), m_costheta.end(), costheta, std::greater<double>());
 		const size_t i_th = (th_it == m_costheta.end()) ? m_costheta.size()-1 : th_it-m_costheta.begin();
 
-		const std::vector<double>::const_iterator en_it = std::upper_bound(m_energies.begin(), m_energies.end(), energy);
+		const auto en_it = std::upper_bound(m_energies.begin(), m_energies.end(), energy);
 		const size_t i_en = (en_it == m_energies.end()) ? m_energies.size()-1 : en_it-m_energies.begin();
 
 		//The total value is frac_u*int_u + (1-frac_u)*int_l
@@ -62,8 +62,8 @@ namespace SolarSystemTools {
 		const double last = (*this)(costhmin, energy);
 
 		//Now loop over all the angles inbetween and do the integration
-		std::vector<double>::const_iterator it = std::upper_bound(m_costheta.begin(), m_costheta.end(), costhmax, std::greater<double>());
-		std::vector<double>::const_iterator end = std::upper_bound(m_costheta.begin(), m_costheta.end(), costhmin, std::greater<double>());
+		auto it = std::upper_bound(m_costheta.begin(), m_costheta.end(), costhmax, std::greater<double>());
+		auto end = std::upper_bound(m_costheta.begin(), m_costheta.end(), costhmin, std::greater<double>());
 		
 		double integ(0);
 		double lastval(first);

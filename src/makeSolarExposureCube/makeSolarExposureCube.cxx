@@ -91,8 +91,8 @@ public:
    virtual void banner() const;
 private:
    st_app::AppParGroup & m_pars;
-   SolarSystemTools::ExposureCubeSun * m_exposure;
-   Likelihood::RoiCuts * m_roiCuts;
+   SolarSystemTools::ExposureCubeSun * m_exposure{nullptr};
+   Likelihood::RoiCuts * m_roiCuts{nullptr};
    void readRoiCuts();
    void createDataCube();
    void writeTableKeywords(const std::string & outfile,
@@ -241,7 +241,7 @@ void ExposureCubeSun::createDataCube() {
 	 const double costhsunmax = cos(thsunmax*M_PI/180.);
 	 double powerbin = m_pars["powerbinsun"];
 	 const double ratio = (1-costhsunmax)/(1-cos(0.25*M_PI/180.));
-	 unsigned int cosbins2 = static_cast<unsigned int>( pow( ratio, 1./powerbin) );
+	 auto cosbins2 = static_cast<unsigned int>( pow( ratio, 1./powerbin) );
 	 // Need at least 2 bins for this to work
 	 if (cosbins2 < 2)
 		 ++cosbins2;
@@ -257,7 +257,7 @@ void ExposureCubeSun::createDataCube() {
    st_facilities::Util::file_ok(scFile);
    std::vector<std::string> scFiles;
    st_facilities::Util::resolve_fits_files(scFile, scFiles);
-   std::vector<std::string>::const_iterator scIt = scFiles.begin();
+   auto scIt = scFiles.begin();
    for ( ; scIt != scFiles.end(); scIt++) {
       st_facilities::Util::file_ok(*scIt);
       formatter.err() << "Working on file " << *scIt << std::endl;

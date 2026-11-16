@@ -42,7 +42,7 @@ SolarTemplate::SolarTemplate(const Likelihood::CountsMap & cmap,
                                const SolarProfile & prof,
                                bool useEbounds,
                                const st_app::AppParGroup * pars)
-   : m_expsun(hpexpsun), m_avgexp(avgexp), m_profile(prof), m_proj(0) {
+   : m_expsun(hpexpsun), m_avgexp(avgexp), m_profile(prof), m_proj(nullptr) {
    setMapGeometry(cmap);
    if (!useEbounds) {
       for (size_t k(0); k < m_energies.size()-1; k++) {
@@ -59,7 +59,7 @@ SolarTemplate::SolarTemplate(const std::vector<double> & energies,
                                const Likelihood::BinnedExposure & avgexp, 
                                const SolarProfile & prof,
                                const st_app::AppParGroup * pars) 
-   : m_energies(energies), m_expsun(hpexpsun), m_avgexp(avgexp), m_profile(prof), m_proj(0)  {
+   : m_energies(energies), m_expsun(hpexpsun), m_avgexp(avgexp), m_profile(prof), m_proj(nullptr)  {
    if (pars) {
       setMapGeometry(*pars);
    } else {
@@ -131,7 +131,7 @@ SolarTemplate::ProfFun::ProfFun(const std::vector<double> & costhsun,
 	m_costhsun(costhsun), m_energies(energies), m_cache(cache), m_ie(ie*(costhsun.size()-1)) {}
 
 auto SolarTemplate::ProfFun::operator() (double costhetasun) const -> double {
-	const std::vector<double>::const_iterator it = 
+	const auto it = 
 		std::upper_bound(m_costhsun.begin(), m_costhsun.end(), costhetasun, std::greater<double>());
 	const size_t l = (it - m_costhsun.begin()) - 1;
 	return m_cache[m_ie+l];
@@ -262,7 +262,7 @@ void SolarTemplate::writeOutput(const std::string & filename) const {
    tip::Table::Iterator row = table->begin();
    tip::Table::Record & record = *row;
 
-   std::vector<double>::const_iterator energy = m_energies.begin();
+   auto energy = m_energies.begin();
    for ( ; energy != m_energies.end(); ++energy, ++row) {
       record["Energy"].set(*energy);
    }

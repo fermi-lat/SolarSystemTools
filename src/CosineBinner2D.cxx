@@ -71,14 +71,14 @@ auto CosineBinner2D::cosine_index(double costheta) -> size_t
 {
     double f ( (1.-costheta)/(1-s_cosmin) );
     if(s_sqrt_weight) f=sqrt(f);
-    const size_t i = static_cast<size_t>(f*s_nbins);
+    const auto i = static_cast<size_t>(f*s_nbins);
     return i<s_nbins-1 ? i : s_nbins-1;
 }
 auto CosineBinner2D::costheta2_index(double costheta2) -> size_t
 {
 		double f ( (1.-costheta2)/(1-s_cosmin2) );
 		f = pow(f,1./s_power2);
-		const size_t i = static_cast<size_t>(f*s_nbins2);
+		const auto i = static_cast<size_t>(f*s_nbins2);
 		return i<s_nbins2-1 ? i : s_nbins2-1;
 }
 auto CosineBinner2D::folded_phi(double phi) -> double
@@ -166,7 +166,7 @@ auto CosineBinner2D::value (size_t i) -> double & {
 
 auto CosineBinner2D::value (size_t i) const -> double{
    const size_t icostheta2 = i / ( s_nbins*(s_phibins+1) );
-   std::vector<std::pair<size_t,size_t> >::const_iterator it = icostheta2toi(icostheta2);
+   auto it = icostheta2toi(icostheta2);
 
    //Return 0 if not found
    if ( it == m_icostheta2toi.end() || it->first != icostheta2 ) return 0;
@@ -176,7 +176,7 @@ auto CosineBinner2D::value (size_t i) const -> double{
 
 auto CosineBinner2D::hasCostheta2 ( double costheta ) const -> bool {
 	const size_t icostheta2 = costheta2_index(costheta);
-   std::vector<std::pair<size_t,size_t> >::const_iterator it = icostheta2toi(icostheta2);
+   auto it = icostheta2toi(icostheta2);
 
    if ( it == m_icostheta2toi.end() || it->first != icostheta2 ) return false;
 	 return true;
@@ -197,7 +197,7 @@ auto CosineBinner2D::operator += (const CosineBinner2D &other) -> CosineBinner2D
 	}
 
 	//Loop over icostheta in other and add to current map
-	std::vector<std::pair<size_t,size_t> >::const_iterator it = other.m_itoicostheta2.begin();
+	auto it = other.m_itoicostheta2.begin();
 	for ( ; it != other.m_itoicostheta2.end(); ++it) {
 		const size_t icostheta2 = it->second;
 
@@ -236,7 +236,7 @@ void CosineBinner2D::setValues(const std::vector<size_t> &indices, const std::ve
 
 auto CosineBinner2D::findI2orAdd(size_t icostheta2) -> size_t {
 		//Find or add icostheta2 to the binner
-		std::vector<std::pair<size_t,size_t> >::iterator it2 = icostheta2toi(icostheta2);
+		auto it2 = icostheta2toi(icostheta2);
 
 		//Add the bin if needed
 		size_t i2(0);

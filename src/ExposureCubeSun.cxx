@@ -40,7 +40,7 @@ const double ExposureCubeSun::s_mjd_missionStart(astro::JulianDate::missionStart
 
 ExposureCubeSun::ExposureCubeSun(const ExposureCubeSun & other) 
    : m_exposure(new ExposureSun(*(other.m_exposure))),
-     m_weightedExposure(0), m_efficiencyFactor(0),
+     m_weightedExposure(nullptr), m_efficiencyFactor(nullptr),
      m_haveFile(other.m_haveFile),
      m_fileName(other.m_fileName), 
 		 m_gtis(other.m_gtis),
@@ -69,7 +69,7 @@ void ExposureCubeSun::readExposureCubeSun(std::string filename) {
       m_weightedExposure = new ExposureSun(filename,
                                                    "WEIGHTED_EXPOSURESUN");
    } catch(tip::TipException &) {
-      m_weightedExposure = 0;
+      m_weightedExposure = nullptr;
    }
    m_haveFile = true;
 	 readKeywords(filename, "EXPOSURESUN");
@@ -82,7 +82,7 @@ ExposureCubeSun(double skybin, double costhetabin, double thetabin, double theta
              const std::vector< std::pair<double, double> > & gtis,
 						 astro::SolarSystem::Body body,
              double zenmax)
-   : m_efficiencyFactor(0),
+   : m_efficiencyFactor(nullptr),
 	   m_haveFile(false), m_fileName(""),
 	   m_hasPhiDependence(false),
      m_costhetabin(costhetabin), m_timeCuts(timeCuts), m_gtis(gtis),
@@ -414,7 +414,7 @@ acceptInterval(double start, double stop,
 
    std::pair<double, double> candidateInterval(start, stop);
 
-   typedef std::vector< std::pair<double, double> > IntervalCont_t;
+   using IntervalCont_t = std::vector< std::pair<double, double> >;
    IntervalCont_t::const_iterator it;
 
    for (it = timeCuts.begin(); it != timeCuts.end(); ++it) {
@@ -427,14 +427,14 @@ acceptInterval(double start, double stop,
    double total(0);
    double maxTotal(candidateInterval.second - candidateInterval.first);
    
-   IntervalCont_t::const_iterator gti_first = 
+   auto gti_first = 
       std::upper_bound(gtis.begin(), gtis.end(), candidateInterval,
                        ::compareFirst);
    if (gti_first != gtis.begin()) {
       --gti_first;
    }
 
-   IntervalCont_t::const_iterator gti_last = 
+   auto gti_last = 
       std::upper_bound(gti_first, gtis.end(), candidateInterval,
                        ::compareSecond);
 
@@ -536,7 +536,7 @@ ExposureCubeSun::Aeff::Aeff(double energy,
 // Turn off phi-dependence if omitted from livetime cube.
    bool phi_dependence(m_observation.expCubeSun().hasPhiDependence());
    if (!phi_dependence) {
-      std::map<unsigned int, irfInterface::Irfs *>::const_iterator respIt 
+      auto respIt 
          = m_observation.respFuncs().begin();
       for ( ; respIt != m_observation.respFuncs().end(); ++respIt) {
          respIt->second->aeff()->setPhiDependence(false);
@@ -551,7 +551,7 @@ auto ExposureCubeSun::Aeff::operator()(double cosTheta, double phi) const -> dou
    // if (inclination > 70.) {
    //    return 0;
    // }
-   std::map<unsigned int, irfInterface::Irfs *>::const_iterator respIt 
+   auto respIt 
       = m_observation.respFuncs().begin();
 	 double aeff_val(0);
    for ( ; respIt != m_observation.respFuncs().end(); ++respIt) {

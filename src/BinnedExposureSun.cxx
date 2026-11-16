@@ -37,7 +37,7 @@ namespace {
    }
    auto 
    findNearest(const std::vector<double> & xx, double x, double tol=1e-5) -> std::vector<double>::const_iterator {
-      std::vector<double>::const_iterator ix = std::find(xx.begin(),
+      auto ix = std::find(xx.begin(),
                                                          xx.end(), x);
       if (ix == xx.end()) { // no exact match, so look for nearest
          for (ix = xx.begin(); ix != xx.end(); ++ix) {
@@ -59,7 +59,7 @@ namespace {
 
 namespace SolarSystemTools {
 
-BinnedExposureSun::BinnedExposureSun() : m_observation(0), m_proj(0), 
+BinnedExposureSun::BinnedExposureSun() : m_observation(nullptr), m_proj(nullptr), 
                                    m_costhmin(-1), m_costhmax(1),
                                    m_enforce_boundaries(false) {}
 
@@ -67,7 +67,7 @@ BinnedExposureSun::BinnedExposureSun(const Likelihood::CountsMap & cmap,
                                const Observation & observation,
                                bool useEbounds,
                                const st_app::AppParGroup * pars)
-   : m_observation(&observation), m_proj(0), m_costhmin(-1), m_costhmax(1),
+   : m_observation(&observation), m_proj(nullptr), m_costhmin(-1), m_costhmax(1),
      m_enforce_boundaries(false) {
    setMapGeometry(cmap);
    if (!useEbounds) {
@@ -86,7 +86,7 @@ BinnedExposureSun::BinnedExposureSun(const Likelihood::CountsMap & cmap,
 BinnedExposureSun::BinnedExposureSun(const std::vector<double> & energies,
                                const Observation & observation,
                                const st_app::AppParGroup * pars) 
-   : m_energies(energies), m_observation(&observation), m_proj(0),
+   : m_energies(energies), m_observation(&observation), m_proj(nullptr),
      m_costhmin(-1), m_costhmax(1),m_enforce_boundaries(false)  {
    if (pars) {
       setMapGeometry(*pars);
@@ -98,7 +98,7 @@ BinnedExposureSun::BinnedExposureSun(const std::vector<double> & energies,
 }
 
 BinnedExposureSun::BinnedExposureSun(const std::string & filename) 
-   : m_observation(0), m_proj(0), m_costhmin(-1), m_costhmax(1),
+   : m_observation(nullptr), m_proj(nullptr), m_costhmin(-1), m_costhmax(1),
      m_enforce_boundaries(false) {
    m_proj = new astro::SkyProj(filename);
 
@@ -128,7 +128,7 @@ BinnedExposureSun::~BinnedExposureSun() {
 }
 
 auto BinnedExposureSun::operator()(double energy, double ra, double dec, double theta) const -> double {
-   std::vector<double>::const_iterator ie = ::findNearest(m_energies, energy);
+   auto ie = ::findNearest(m_energies, energy);
    unsigned int k = ie - m_energies.begin();
 
    int l = 0;
@@ -338,7 +338,7 @@ void BinnedExposureSun::writeOutput(const std::string & filename) const {
    tip::Table::Iterator row = table->begin();
    tip::Table::Record & record = *row;
 
-   std::vector<double>::const_iterator energy = m_energies.begin();
+   auto energy = m_energies.begin();
    for ( ; energy != m_energies.end(); ++energy, ++row) {
       record["Energy"].set(*energy);
    }
@@ -380,7 +380,7 @@ auto BinnedExposureSun::Aeff::operator()(double cosTheta, double phi) const -> d
    }
 	 //Check the cache for the value, add it if it does not exist
 	 const std::pair<double,double> indx(std::make_pair(cosTheta,phi));
-	 std::map<std::pair<double,double>,double>::iterator it = m_cache.find(indx);
+	 auto it = m_cache.find(indx);
 	 if (it == m_cache.end()) {
 		 it = m_cache.insert(std::make_pair(indx,ExposureCubeSun::Aeff::operator()(cosTheta, phi))).first;
 	 }

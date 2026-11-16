@@ -37,7 +37,7 @@ namespace {
    }
    auto 
    findNearest(const std::vector<double> & xx, double x, double tol=1e-5) -> std::vector<double>::const_iterator {
-      std::vector<double>::const_iterator ix = std::find(xx.begin(),
+      auto ix = std::find(xx.begin(),
                                                          xx.end(), x);
       if (ix == xx.end()) { // no exact match, so look for nearest
          for (ix = xx.begin(); ix != xx.end(); ++ix) {
@@ -59,7 +59,7 @@ namespace {
 
 namespace SolarSystemTools {
 
-HealpixExposureSun::HealpixExposureSun() : m_observation(0),
+HealpixExposureSun::HealpixExposureSun() : m_observation(nullptr),
                                    m_costhmin(0), m_costhmax(1),
 																	 m_distCosCut(-1), m_avgDist(0),
                                    m_enforce_boundaries(false) {}
@@ -83,7 +83,7 @@ HealpixExposureSun::HealpixExposureSun(const std::vector<double> & energies,
 }
 
 HealpixExposureSun::HealpixExposureSun(const std::string & filename) 
-   : m_observation(0), m_costhmin(0), m_costhmax(1),
+   : m_observation(nullptr), m_costhmin(0), m_costhmax(1),
 		 m_distCosCut(-1), m_avgDist(0),
      m_enforce_boundaries(false) {
 
@@ -144,7 +144,7 @@ HealpixExposureSun::HealpixExposureSun(const std::string & filename)
     m_exposureMap.setHealpix(healpix::Healpix(nside, ord, coordsys));
 
     tip::Table::ConstIterator itor = table.begin();
-		healpix::HealpixArray<pixel>::iterator haitor = m_exposureMap.begin();
+		auto haitor = m_exposureMap.begin();
 
     for( ; itor != table.end(); ++haitor, ++itor)
     {
@@ -164,7 +164,7 @@ HealpixExposureSun::HealpixExposureSun(const std::string & filename)
 }
 
 auto HealpixExposureSun::integrate(double energy, double ra, double dec, const Fun &f) const -> double {
-   std::vector<double>::const_iterator ie = ::findNearest(m_energies, energy);
+   auto ie = ::findNearest(m_energies, energy);
    unsigned int k = ie - m_energies.begin();
 
 	 //Get a reference to the pixel
@@ -187,7 +187,7 @@ auto HealpixExposureSun::operator()(double energy, double ra, double dec, double
 	// Check for theta out of bounds
 	 if (m_thetasun[m_thetasun.size()-1] < theta) return 0;
 
-   std::vector<double>::const_iterator ie = ::findNearest(m_energies, energy);
+   auto ie = ::findNearest(m_energies, energy);
    unsigned int k = ie - m_energies.begin();
 
    int l = 0;
@@ -249,7 +249,7 @@ void HealpixExposureSun::computeMap() {
 	 for (size_t i = 0; i < m_energies.size(); ++i)
      aeffs[i] = new BinnedExposureSun::Aeff(m_energies[i], *m_observation, m_costhmin, m_costhmax);
 
-	 healpix::HealpixArray<pixel>::iterator haitor = m_exposureMap.begin();
+	 auto haitor = m_exposureMap.begin();
 
 	 for( ; haitor != m_exposureMap.end(); ++haitor, ++iter ) {
 
@@ -294,7 +294,7 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
 
 	 // get iterators for the Table and the HealpixArray
 	 tip::Table::Iterator itor = table->begin();
-	 healpix::HealpixArray<pixel>::const_iterator haitor = m_exposureMap.begin();
+	 auto haitor = m_exposureMap.begin();
 
 	 // now just copy
 	 for( ; haitor != m_exposureMap.end(); ++haitor, ++itor)
@@ -333,7 +333,7 @@ void HealpixExposureSun::writeOutput(const std::string & filename) const {
    tip::Table::Iterator row = table->begin();
    tip::Table::Record & record = *row;
 
-   std::vector<double>::const_iterator energy = m_energies.begin();
+   auto energy = m_energies.begin();
    for ( ; energy != m_energies.end(); ++energy, ++row) {
       record["Energy"].set(*energy);
    }
@@ -375,7 +375,7 @@ void HealpixExposureSun::pixel::setStride(size_t stride) {m_stride = stride;}
 
 auto HealpixExposureSun::pixel::value(size_t i) -> float & {
 	const size_t ifake = i / m_stride;
-	pixelIndex::iterator it = std::lower_bound(m_ifaketoreal.begin(), m_ifaketoreal.end(), std::pair<size_t,size_t>(ifake,0), less_than);
+	auto it = std::lower_bound(m_ifaketoreal.begin(), m_ifaketoreal.end(), std::pair<size_t,size_t>(ifake,0), less_than);
 
 	//Add the bin if needed
 	size_t ireal(0);
@@ -394,7 +394,7 @@ auto HealpixExposureSun::pixel::value(size_t i) -> float & {
 
 auto HealpixExposureSun::pixel::value(size_t i) const -> float {
 	const size_t ifake = i / m_stride;
-	pixelIndex::const_iterator it = std::lower_bound(m_ifaketoreal.begin(), m_ifaketoreal.end(), std::pair<size_t,size_t>(ifake,0), less_than);
+	auto it = std::lower_bound(m_ifaketoreal.begin(), m_ifaketoreal.end(), std::pair<size_t,size_t>(ifake,0), less_than);
 
 	//Return 0 if bin not found
 	if ( it == m_ifaketoreal.end() || it->first != ifake )  return 0;

@@ -190,7 +190,7 @@ void LikeExposureSun::writeFilename(const std::string & outfile) const {
 void LikeExposureSun::writeLivetimes(const std::string & outfile,
                                   const ExposureSun * self,
                                   const std::string & extname) const {
-   if (self == 0) {
+   if (self == nullptr) {
       self = this;
    }
 	 self->write(outfile,extname);
@@ -274,7 +274,7 @@ void LikeExposureSun::setCosbinsFieldFormat(const std::string & outfile,
                                          const std::string & extname) const {
    int status(0);
 
-   fitsfile * fptr(0);
+   fitsfile * fptr(nullptr);
    std::string extfilename(outfile + "[" + extname + "]");
    fits_open_file(&fptr, extfilename.c_str(), READWRITE, &status);
    fitsReportError(status, "LikeExposureSun::setCosbinsFieldFormat");
@@ -306,7 +306,7 @@ acceptInterval(double start, double stop,
 
    std::pair<double, double> candidateInterval(start, stop);
 
-   typedef std::vector< std::pair<double, double> > IntervalCont_t;
+   using IntervalCont_t = std::vector< std::pair<double, double> >;
    IntervalCont_t::const_iterator it;
 
    for (it = timeCuts.begin(); it != timeCuts.end(); ++it) {
@@ -319,14 +319,14 @@ acceptInterval(double start, double stop,
    double total(0);
    double maxTotal(candidateInterval.second - candidateInterval.first);
    
-   IntervalCont_t::const_iterator gti_first = 
+   auto gti_first = 
       std::upper_bound(gtis.begin(), gtis.end(), candidateInterval,
                        ::compareFirst);
    if (gti_first != gtis.begin()) {
       --gti_first;
    }
 
-   IntervalCont_t::const_iterator gti_last = 
+   auto gti_last = 
       std::upper_bound(gti_first, gtis.end(), candidateInterval,
                        ::compareSecond);
 

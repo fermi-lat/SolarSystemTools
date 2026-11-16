@@ -84,7 +84,7 @@ void ExposureSun::load(const std::string& inputFile, const std::string& tablenam
     data().setHealpix(Healpix(nside, ord, coordsys));
 
     tip::Table::ConstIterator itor = table.begin();
-    healpix::HealpixArray<CosineBinner2D>::iterator haitor = data().begin();
+    auto haitor = data().begin();
 
     for( ; itor != table.end(); ++haitor, ++itor)
     {
@@ -124,7 +124,7 @@ ExposureSun::ExposureSun(double pixelsize, double cosbinsize, double thbinsize, 
 , m_solar_dir(astro::SolarSystem::SUN)
 {
 	const double cosmin2 = cos(thmax*M_PI/180.);
-    unsigned int cosbins = static_cast<unsigned int>(1./cosbinsize);
+    auto cosbins = static_cast<unsigned int>(1./cosbinsize);
     unsigned int cosbins2 = static_cast<unsigned int>( pow( (1-cosmin2)/(1-cos(thbinsize*M_PI/180.)) , 1./powerbin) ) + 1;
     if( cosbins != CosineBinner2D::nbins() || cosbins2 != CosineBinner2D::nbins2() ) { 
         CosineBinner2D::setBinning(0, cosmin2, cosbins, cosbins2);
@@ -138,7 +138,7 @@ void ExposureSun::create_cache()
     size_t datasize(data().size());
     m_dir_cache.reserve(datasize);
 
-    SkyBinner2D::iterator is = data().begin();
+    auto is = data().begin();
     for( ; is != data().end(); ++is){ // loop over all pixels
         Simple3Vector pixdir(data().dir(is)());
         m_dir_cache.push_back(std::make_pair(&*is, pixdir));
@@ -352,7 +352,7 @@ void ExposureSun::write(const std::string& outputfile, const std::string& tablen
 
     // get iterators for the Table and the HealpixArray
     tip::Table::Iterator itor = table.begin();
-    healpix::HealpixArray<CosineBinner2D>::const_iterator haitor = data().begin();
+    auto haitor = data().begin();
 
     // Only store the non-zero values
     for( ; haitor != data().end(); ++haitor, ++itor)
@@ -388,8 +388,8 @@ auto ExposureSun::operator += (const ExposureSun &other) -> ExposureSun& {
 		throw std::runtime_error("ExposureSun::operator+=: zenith angle cuts don't match");
 
 	//Loop over all the pixels and add them
-	healpix::HealpixArray<CosineBinner2D>::iterator it = data().begin();
-	healpix::HealpixArray<CosineBinner2D>::const_iterator oit = other.data().begin();
+	auto it = data().begin();
+	auto oit = other.data().begin();
 	for ( ; it != data().end(); ++it, ++oit) {
 		(*it) += (*oit);
 	}
